@@ -5,6 +5,7 @@ from django.utils.text import slugify
 
 from . import util
 import re
+import random
 
 class NewPageForm(forms.Form):
     title = forms.CharField(label="Title", widget=forms.TextInput(attrs={'class': "form-control"}))
@@ -107,6 +108,23 @@ def editpage(request, name):
             return render(request, "encyclopedia/page.html", {
                 "page": "Page not found",
                 "name": name
-            }) 
+            })
+
+def randpage(request):
+    # Select random entry from list of entries
+    rand_title = random.choice(util.list_entries())
+    # Fetch the entry from disk
+    page = util.get_entry(rand_title)
+    # Render page
+    if page is not None:
+        return render(request, "encyclopedia/page.html", {
+            "page": page,
+            "name": rand_title
+        })
+    else:
+        return render(request, "encyclopedia/page.html", {
+            "page": "Page not found",
+            "name": rand_title
+        })    
 
 
