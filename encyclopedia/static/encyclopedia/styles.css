@@ -1,6 +1,7 @@
 body {
     margin: 0;
     background-color: white;
+    max-width: 98%;
 }
 
 code {

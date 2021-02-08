@@ -71,6 +71,42 @@ def newpage(request):
         return render(request, "encyclopedia/newpage.html", {
             "form": NewPageForm()
         })
-
+        
+def editpage(request, name):
+    if request.method == "POST":
+        form = NewPageForm(request.POST)
+        if form.is_valid():
+            title = form.cleaned_data["title"]
+            content = form.cleaned_data["content"]
+            if title == name:
+                util.save_entry(title, content)
+                messages.success(request, f'Page with title "{title}" successfully edited.')
+                return render(request, "encyclopedia/page.html", {
+                    "page": util.get_entry(title),
+                    "name": title
+                })
+            else:
+                # Title of the page was also changed, we do not have way of renaming the entry and it could get messy if we would allow to save as new page
+                DANGER = 50;
+                messages.add_message(request, DANGER, f'Can\'t change page title', extra_tags='danger')
+                return render(request, "encyclopedia/editpage.html", {
+                    "form": form,
+                })
+    else:
+        page = util.get_entry(name)
+        if page is not None:
+            form = NewPageForm({
+                "title": name,
+                "content": page
+            })
+            
+            return render(request, "encyclopedia/editpage.html", {
+                "form": form
+            })
+        else:
+            return render(request, "encyclopedia/page.html", {
+                "page": "Page not found",
+                "name": name
+            }) 
 
 
