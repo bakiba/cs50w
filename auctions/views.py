@@ -10,7 +10,12 @@ from .forms import ListingForm
 
 
 def index(request):
-    return render(request, "auctions/index.html")
+    q = Listing.objects.filter(active=True).order_by("created")
+    
+    
+    return render(request, "auctions/index.html", {
+        "listings" : q,
+    })
 
 
 def login_view(request):

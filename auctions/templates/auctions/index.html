@@ -2,6 +2,25 @@
 
 {% block body %}
     <h2>Active Listings</h2>
-
-    TODO
+    <!-- layout insipired by https://www.ordinarycoders.com/blog/article/django-models -->
+    <div class="container p-4 ml-0">
+        <div class="row">
+          {% for l in listings %}
+          <div class="col-lg-4 col-md-6 col-sm-12 pb-4">
+            <div class="card h-100 p-4">
+              {% if l.image_url %}
+                <!-- how to handle missing images taken from https://blog.imagekit.io/how-to-handle-loading-images-that-may-not-exist-on-your-website-92e6c3c6ea63 -->
+                <!-- image placeholder taken from https://github.com/dwyl/learn-tachyons/issues/46-->
+                <img src="{{ l.image_url }}" class="card-img-top" alt="{{ l.title}}" style="width: auto; height: 300px; object-fit: contain;" onerror="this.onerror=null;this.src='/static/auctions/blank_img.png';">
+              {% endif %}
+                <br>
+              <h4>{{l.title}}</h4>
+              <p class="text-muted">Added: {{l.created}}</p>
+              <h5>${{l.start_bid}}</h5>
+              <p>{{l.description}}</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>    
 {% endblock %}
