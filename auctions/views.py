@@ -4,9 +4,10 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib import messages
 
-from .models import User, Listing, Bid, Comment
+from .models import User, Listing, Bid, Comment, Watchlist
 from .forms import ListingForm
 
 from django import template
@@ -121,6 +122,39 @@ def user_listing_view(request, user_id):
     return render(request, "auctions/index.html", {
         "listings" : q,
         
+    })
+@login_required(login_url='login')
+def watchlist_action(request, listing_id, action):
+    if action == "add":
+        l = get_object_or_404(Listing, pk=listing_id)
+        try:
+            q = Watchlist.objects.create(listing=l, user=request.user)
+            q.save()
+            messages.success(request, 'Listing added to watchlist.')
+            return redirect(request.META['HTTP_REFERER'])
+        except IntegrityError:
+            messages.error(request, 'Listing already in watchlist.')
+            return redirect(request.META['HTTP_REFERER'])
+    elif action == "remove":
+        #print("action remove")
+        l = get_object_or_404(Listing, pk=listing_id)
+        try:
+            q = Watchlist.objects.get(listing=l, user=request.user)
+            q.delete()
+            messages.success(request, 'Listing removed from watchlist.')
+            return redirect(request.META['HTTP_REFERER'])
+        except IntegrityError:
+            messages.error(request, 'Listing not in watchlist.')
+            return redirect(request.META['HTTP_REFERER'])
+    else:
+        messages.error(request, 'Unknown action.')
+        return redirect(request.META['HTTP_REFERER'])
+    
+@login_required(login_url='login')
+def watchlist_view(request):
+    listings = Listing.objects.filter(active=True, watchlist__user=request.user).order_by("created")
+    return render(request, "auctions/index.html", {
+        "listings" : listings,
     })
 
 

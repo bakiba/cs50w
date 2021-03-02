@@ -2,7 +2,13 @@
 {% load auction_filters %}
 
 {% block body %}
+{% if 'watchlist' in request.path %}
+    <h2>My Watchlist</h2>
+{% elif 'user' in request.path %}
+    <h2>Listings by {{ listings.0.created_by.username }}</h2>
+{% else %}
     <h2>Active Listings</h2>
+{% endif %}
     <!-- layout insipired by https://www.ordinarycoders.com/blog/article/django-models -->
     <div class="container p-4 ml-0">
         <div class="card-columns">
@@ -17,14 +23,20 @@
                 <div class="card-body">
                     <h4 class="card-title" style="display: inline-block;">{{l.title}}</h4>
                     {% if user.is_authenticated %}
-                        <a href="#" class="badge badge-secondary" data-toggle="tooltip" title="Click to remove">Watchlist</a>
+                        {% is_watched l.id user.id as watched %}
+                        {% if watched %}
+                            <a href="{% url 'watchlist_action' l.id 'remove' %}" class="badge badge-secondary" data-toggle="tooltip" title="Click to remove">Watchlist</a>
+                        {% endif %}
                     {% endif %}
                     <p class="text-muted">Added: {{l.created}}</p>
                     <h5>${{l.id|price}}</h5>
                     <p class="card-text" >{{l.description}}</p>
                     <a href="{% url 'listing' l.id %}" class="card-link">Details</a>
                     {% if user.is_authenticated %}
-                    <a href="{% url 'listing' l.id %}" class="card-link float-right">Add to watchlist</a>
+                        {% is_watched l.id user.id as watched %}
+                        {% if not watched %}
+                            <a href="{% url 'watchlist_action' l.id 'add' %}" class="card-link float-right">Add to watchlist</a>
+                        {% endif %}    
                     {% endif %}
                 </div>
             </div>

@@ -21,6 +21,10 @@ class Listing(models.Model):
 class Watchlist(models.Model):
     listing = models.ForeignKey(Listing, on_delete=CASCADE)
     user = models.ForeignKey(User, on_delete=CASCADE, related_name="mywatch")
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['listing', 'user'], name='unique item in watchlist')
+        ]
 
 class Bid(models.Model):
     listing = models.ForeignKey(Listing, on_delete=CASCADE, related_name="bids")
