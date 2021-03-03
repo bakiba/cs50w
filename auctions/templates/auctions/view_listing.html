@@ -38,7 +38,19 @@
                 {% else %}
                    <h5>Starting bid: ${{ listing.start_bid }} </h5>
                 {% endif %}
-
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="input-group mb-2">
+                        {% with bid=listing.id|price %}
+                        <input type="number" name="bid" class="form-control" placeholder="Minimum bid ${{ bid|min_bid }}" min="{{ bid|min_bid }}" step="any" aria-label="Min bid" aria-describedby="button-bid" required>
+                        {% endwith %}
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="submit" id="button-bid">Bid</button>
+                        </div>
+                        
+                    </div>
+                </form>
+                <hr>
             <p>{{ listing.description }}</p>
         </div>
     </div>

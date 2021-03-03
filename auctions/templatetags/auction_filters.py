@@ -1,6 +1,7 @@
 from django import template
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
+from decimal import Decimal
 
 register = template.Library()
 from ..models import User, Listing, Bid, Comment, Watchlist
@@ -35,6 +36,11 @@ def is_watched(listing_id, user_id):
     u = User.objects.get(pk=user_id)
     return Watchlist.objects.filter(listing=l, user=u).exists() 
 
+@register.filter
+def min_bid(value):
+    #print("listing id:", value)
+    return round(Decimal(value) + Decimal(0.1),2)
+#https://hunj.dev/blog/python-validate-url/
 @register.filter
 def valid_url(to_validate):
     validator = URLValidator()

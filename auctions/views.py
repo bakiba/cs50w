@@ -102,7 +102,16 @@ def create_listing_view(request):
         })
 
 def listing_view(request, listing_id):
-    listing = get_object_or_404(Listing, pk=listing_id)   
+    listing = get_object_or_404(Listing, pk=listing_id)
+    # We have submitted bid
+    if request.method == "POST":
+        bid = request.POST["bid"]
+        try:
+            q = Bid.objects.create(listing=listing, user=request.user, bid=bid)
+            q.save()
+            messages.success(request, 'Bid submitted successfully.')  
+        except IntegrityError:
+            messages.error(request, 'Bid not submitted.')
     #listing = Listing.objects.get(pk=listing_id)
     '''
     bids = listing.bids.all()
