@@ -8,6 +8,14 @@ class User(AbstractUser):
     pass
 
 class Listing(models.Model):
+    DURATION_CHOICES = (
+        (3,'3'),
+        (5,'5'),
+        (7,'7'),
+        (10,'10'),
+        (30,'30')
+    )
+
     title = models.CharField(max_length=64)
     description = models.CharField(max_length=500)
     start_bid = models.DecimalField(max_digits=10, decimal_places=2)
@@ -17,6 +25,7 @@ class Listing(models.Model):
     active = models.BooleanField(default=True)
     created_by = models.ForeignKey(User, on_delete=models.PROTECT)
     winner = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name="wins", blank=True, null=True)
+    duration = models.IntegerField(choices=DURATION_CHOICES, default=30)
 
 class Watchlist(models.Model):
     listing = models.ForeignKey(Listing, on_delete=CASCADE)

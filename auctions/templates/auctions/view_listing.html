@@ -7,13 +7,17 @@
 
 {% block body %}
 
-<div class="container w-75 p-3 ml-0">
+<div class="container ml-0">
+        
     <h2 style="display: inline-block;"> {{ listing.title }}</h2>
     {% if user.is_authenticated %}
         {% is_watched listing.id user.id as watched %}
         {% if watched %}
-            <a href="{% url 'watchlist_action' listing.id 'remove' %}" class="badge badge-secondary" data-toggle="tooltip" title="Click to remove">Watchlist</a>
+            <a href="{% url 'listing_action' listing.id 'remove' %}" class="badge badge-secondary" data-toggle="tooltip" title="Click to remove">Watchlist</a>
         {% endif %}
+    {% endif %}
+    {% if not listing.active %}
+        <span class="badge badge-warning float-right">Closed</span>
     {% endif %}
     <div class="row">
         <div class="col">
@@ -27,46 +31,124 @@
         <div class="col">
            
                 {% if listing.id|bid_count %}
+                <h6><del>Starting price: ${{ listing.start_bid }} </del></h6>
                 <h5 style="display: inline-block;">Current bid: ${{ listing.id|price }}</h5> 
                 <span class="text-muted" style="margin-left: 10px;">
-                    {% if listing.id|bid_count > 1 %}
-                        ({{listing.id|bid_count}} Bids)
+                    {% if listing.active %}
+                        {% if listing.id|bid_count > 1 %}
+                            ({{listing.id|bid_count}} Bids{% if user.is_authenticated %}; You are <span class="badge bg-secondary text-light">{{ win }}</span>) {% else %}){% endif %}
+                        {% else %}
+                            ({{listing.id|bid_count}} Bid{% if user.is_authenticated %}; You are <span class="badge bg-secondary text-light">{{ win }}</span>) {% else %}){% endif %}
+                        {% endif %}
                     {% else %}
-                        ({{listing.id|bid_count}} Bid)
+                        {% if listing.winner == request.user %}
+                            (Congratulations, you have <span class="badge bg-success text-light">won</span> this!)
+                        {% endif %}
                     {% endif %}
                 </span>
                 {% else %}
-                   <h5>Starting bid: ${{ listing.start_bid }} </h5>
+                   <h5>Starting price: ${{ listing.start_bid }} </h5>
                 {% endif %}
                 <form method="POST">
                     {% csrf_token %}
                     <div class="input-group mb-2">
+                        {% if user.is_authenticated %}
                         {% with bid=listing.id|price %}
-                        <input type="number" name="bid" class="form-control" placeholder="Minimum bid ${{ bid|min_bid }}" min="{{ bid|min_bid }}" step="any" aria-label="Min bid" aria-describedby="button-bid" required>
+                            {% if listing.created_by == request.user %}
+                                <input type="number" name="bid" class="form-control" placeholder="Unable to bid on own listing" min="{{ bid|min_bid }}" max="99999999.99" step="any" aria-label="Min bid" aria-describedby="button-bid" disabled>
+                             {% else %}
+                                <input type="number" name="bid" class="form-control" placeholder="Minimum bid ${{ bid|min_bid }}" min="{{ bid|min_bid }}" max="99999999.99" step="any" aria-label="Min bid" aria-describedby="button-bid" required>
+                             {% endif %}   
                         {% endwith %}
                         <div class="input-group-append">
-                            <button class="btn btn-outline-secondary" type="submit" id="button-bid">Bid</button>
+                            {% if listing.created_by == request.user %}
+                                <button class="btn btn-outline-secondary" type="submit" id="button-bid" disabled="disabled">Bid</button>
+                            {% else %}
+                                {% if listing.active %}    
+                                    <button class="btn btn-outline-secondary" type="submit" id="button-bid">Bid</button>
+                                {% else %}
+                                    <button class="btn btn-outline-secondary" type="submit" id="button-bid" disabled="disabled">Bid</button>
+                                {% endif %}
+                            {% endif %}
                         </div>
+                        {% else %}
+                            <input type="number" name="bid" class="form-control" placeholder="You must sign-in to bid" disabled>
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary" type="submit" id="button-bid" disabled="disabled">Bid</button>
+                            </div>
+                        {% endif %}
                         
                     </div>
                 </form>
+                {% if listing.active %}
+                    Auction ending in: <span class="badge rounded-pill bg-info text-dark" id="demo"></span>    
+                {% endif %}
                 <hr>
             <p>{{ listing.description }}</p>
         </div>
     </div>
     <hr>
+    {% if listing.created_by.id == user.id and listing.active %}
+    <div class="float-right">
+        <a href="{% url 'listing_action' listing.id 'close' %}" role="button" class="btn btn-secondary btn-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"></path>
+            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
+            </svg> Close Listing
+        </a>
+    </div>
+    {% endif %}
     <div class="row">
         <div class="col">
             <p class="text-muted">
-                Added: {{ listing.created }} |
+                Added: <span>{{ listing.created }}</span> |
                 {% if user.is_authenticated %}
                 Added by: 
-                    <a href="{% url 'userlistings' listing.created_by.id %}">{{ listing.created_by.username }}</a> |
+                    <a href="{% url 'userlistings' listing.created_by.id %}" class="badge badge-secondary">{{ listing.created_by.username }}</a> |
                 {% endif %}
                 Category: {{ listing.category }} </p>
         </div>
         
     </div>
 </div>
-
+<span id='date_added' style="display:none">{{ listing.created|date:"c" }}</span>
+<script>
+    // thanks to https://stackoverflow.com/questions/563406/add-days-to-javascript-date?page=2&tab=votes#tab-top
+    var msInDay = 86400000;
+    // will have to change this to 
+    var duration = "{{ listing.duration }}"
+    var date_added = new Date("{{ listing.created.isoformat }}")
+    var milliseconds = date_added.getTime();
+    var newMillisecods = milliseconds + msInDay * duration;
+    var date_end = new Date(newMillisecods);
+        
+    //var countDownDate = new Date()
+    //countDownDate.setDate(date_added.getDate() + 30)
+    // Update the count down every 1 second
+    var x = setInterval(function() {
+    
+      // Get today's date and time
+      var now = new Date().getTime();
+    
+      // Find the distance between now and the count down date
+      var distance = date_end - now;
+    
+      // Time calculations for days, hours, minutes and seconds
+      var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    
+      // Display the result in the element with id="demo"
+      document.getElementById("demo").innerHTML = days + "d " + hours + "h "
+      + minutes + "m " + seconds + "s ";
+    
+      // If the count down is finished, write some text
+      if (distance < 0) {
+        clearInterval(x);
+        document.getElementById("demo").innerHTML = "EXPIRED";
+        document.getElementById("button-bid").disabled = true;
+      }
+    }, 1000);
+    </script>
 {% endblock %}

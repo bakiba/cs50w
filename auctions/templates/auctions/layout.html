@@ -36,6 +36,12 @@
                     <a class="nav-link" href="{% url 'create' %}">Create Listing</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="{% url 'userlistings' user.id %}">My Listings</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'mywins' %}">My Wins</a>
+                </li>
+                <li class="nav-item">
                     {% if user.id|watch_count %}
                         <a class="nav-link" href="{% url 'watchlist' %}" style="display: inline-block;margin-right: -18px;">Watchlist</a>
                         <span class="badge bg-secondary text-light">{{user.id|watch_count }}</span>    

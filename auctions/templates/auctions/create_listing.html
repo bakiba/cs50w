@@ -19,6 +19,9 @@
                 {{ form.start_bid.label_tag }} {{ form.start_bid }}    
             </div>
             <div class="col">
+                {{ form.duration.label_tag |add:" (days)" }} {{ form.duration }}    
+            </div>
+            <div class="col">
                 {{ form.category.label_tag }} {{ form.category }}
             </div>
         </div>

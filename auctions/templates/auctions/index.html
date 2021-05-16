@@ -6,6 +6,8 @@
     <h2>My Watchlist</h2>
 {% elif 'user' in request.path %}
     <h2>Listings by {{ listings.0.created_by.username }}</h2>
+{% elif 'mywins' in request.path %}
+    <h2>My Wins</h2>
 {% else %}
     <h2>Active Listings</h2>
 {% endif %}
@@ -25,8 +27,11 @@
                     {% if user.is_authenticated %}
                         {% is_watched l.id user.id as watched %}
                         {% if watched %}
-                            <a href="{% url 'watchlist_action' l.id 'remove' %}" class="badge badge-secondary" data-toggle="tooltip" title="Click to remove">Watchlist</a>
+                            <a href="{% url 'listing_action' l.id 'remove' %}" class="badge badge-secondary" data-toggle="tooltip" title="Click to remove">Watchlist</a>
                         {% endif %}
+                    {% endif %}
+                    {% if not l.active %}
+                        <span class="badge badge-warning float-right">Closed</span>
                     {% endif %}
                     <p class="text-muted">Added: {{l.created}}</p>
                     <h5>${{l.id|price}}</h5>
@@ -35,7 +40,7 @@
                     {% if user.is_authenticated %}
                         {% is_watched l.id user.id as watched %}
                         {% if not watched %}
-                            <a href="{% url 'watchlist_action' l.id 'add' %}" class="card-link float-right">Add to watchlist</a>
+                            <a href="{% url 'listing_action' l.id 'add' %}" class="card-link float-right">Add to watchlist</a>
                         {% endif %}    
                     {% endif %}
                 </div>

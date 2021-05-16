@@ -27,7 +27,7 @@ def bid_count(value):
 @register.filter
 def watch_count(value):
     #print("listing id:", value)
-    return Listing.objects.filter(active=True, watchlist__user=value).count()
+    return Listing.objects.filter(watchlist__user=value).count()
     
 @register.simple_tag
 def is_watched(listing_id, user_id):
