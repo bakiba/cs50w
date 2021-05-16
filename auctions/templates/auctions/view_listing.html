@@ -43,13 +43,16 @@
                     {% else %}
                         {% if listing.winner == request.user %}
                             (Congratulations, you have <span class="badge bg-success text-light">won</span> this!)
+                        {% else %}
+                            (Listing won by <span class="badge bg-success text-light">{{ listing.winner }}</span>)    
                         {% endif %}
                     {% endif %}
                 </span>
                 {% else %}
-                   <h5>Starting price: ${{ listing.start_bid }} </h5>
+                   <h5 style="display: inline-block;">Starting price: ${{ listing.start_bid }} </h5>
+                   <span class="text-muted" style="margin-left: 10px;">(No bids on this listing!)</span>
                 {% endif %}
-                <form method="POST">
+                <form method="POST" id="bid_form">
                     {% csrf_token %}
                     <div class="input-group mb-2">
                         {% if user.is_authenticated %}
@@ -115,6 +118,38 @@
         </div>
         
     </div>
+    <!--Comments section-->
+    {% if user.is_authenticated and listing.active %}
+    <div class="row">
+        <div class="col">
+        <form method="POST" id="comment_form">
+            <div class="card mb-1">
+                <div class="card-header">
+                Add comment:
+                </div>
+                {% csrf_token %}
+                <textarea class="form-control" name="comment" rows="3"></textarea>
+            </div>
+            <button type="submit" name="button-comment" class="btn btn-secondary btn-sm float-right">Post Comment</button>
+        </form>
+        </div>
+    </div>
+    {% endif %}
+    <h2>{{listing.id|comment_count}} Comments</h2>
+    {% for comment in comments %}
+     <div class="card mb-3">
+        <div class="card-header">
+          <span class="badge badge-secondary">{{comment.user.username}}</span> <small class="text-muted">said on {{comment.created}}</small>
+        </div>
+        <div class="card-body">
+          
+          <p class="card-text">{{comment.comment}}</p>
+          
+        </div>
+      </div>
+    {% endfor%}
+    
+    
 </div>
 <span id='date_added' style="display:none">{{ listing.created|date:"c" }}</span>
 <script>

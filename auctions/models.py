@@ -44,5 +44,6 @@ class Comment(models.Model):
     listing = models.ForeignKey(Listing, on_delete=CASCADE, related_name="comments")
     user = models.ForeignKey(User, on_delete=CASCADE, related_name="mycomments")
     comment = models.CharField(max_length=500)
+    created = models.DateTimeField(auto_now_add=True)
 
 

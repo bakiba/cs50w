@@ -111,18 +111,30 @@ def listing_view(request, listing_id):
     listing = get_object_or_404(Listing, pk=listing_id)
     # We have submitted bid
     if request.method == "POST":
-        # get the submitted bid
-        bid = request.POST["bid"]
-        try:
-            # Save the bid into DB. We're not doing much checking here, relaying on form validation logic
-            q = Bid.objects.create(listing=listing, user=request.user, bid=bid)
-            q.save()
-            messages.success(request, 'Bid submitted successfully.') 
-            # Return to the same page with cleared POST
-            return redirect(request.META['HTTP_REFERER'])
-        except IntegrityError:
-            messages.error(request, 'Bid not submitted.')
-            return redirect(request.META['HTTP_REFERER'])
+        if "button-comment" in request.POST:
+            # we posted new comment
+            comment = request.POST["comment"]
+            try:
+                c = Comment.objects.create(listing=listing, user=request.user, comment=comment)
+                c.save()
+                messages.success(request, "Comment added successfully")
+                return redirect(request.META['HTTP_REFERER'])
+            except IntegrityError:
+                messages.error(request, 'Comment not submitted.')
+                return redirect(request.META['HTTP_REFERER'])
+        else:
+            # get the submitted bid
+            bid = request.POST["bid"]
+            try:
+                # Save the bid into DB. We're not doing much checking here, relaying on form validation logic
+                q = Bid.objects.create(listing=listing, user=request.user, bid=bid)
+                q.save()
+                messages.success(request, 'Bid submitted successfully.') 
+                # Return to the same page with cleared POST
+                return redirect(request.META['HTTP_REFERER'])
+            except IntegrityError:
+                messages.error(request, 'Bid not submitted.')
+                return redirect(request.META['HTTP_REFERER'])
     # Retrieve all bids for given listing ordered from highest to lowest
     b = listing.bids.all().order_by('-bid')
     # determine if current user is:
@@ -141,6 +153,7 @@ def listing_view(request, listing_id):
     return render(request, "auctions/view_listing.html", {
         "listing" : listing,
         "win" : win,
+        "comments" : listing.comments.all().order_by('-created')
     })
 
 def categories_view(request):

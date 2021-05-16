@@ -22,7 +22,14 @@ def bid_count(value):
     #print("listing id:", value)
     listing = Listing.objects.get(pk=value)
     bids = listing.bids.all()
-    return bids.values().count() 
+    return bids.values().count()
+
+@register.filter
+def comment_count(value):
+    #print("listing id:", value)
+    listing = Listing.objects.get(pk=value)
+    comments = listing.comments.all()
+    return comments.values().count()  
 
 @register.filter
 def watch_count(value):
