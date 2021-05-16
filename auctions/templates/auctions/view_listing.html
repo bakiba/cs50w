@@ -106,7 +106,12 @@
                 Added by: 
                     <a href="{% url 'userlistings' listing.created_by.id %}" class="badge badge-secondary">{{ listing.created_by.username }}</a> |
                 {% endif %}
-                Category: {{ listing.category }} </p>
+                {% if listing.category %}
+                    Category: <a href="{% url 'category' listing.category %}">{{ listing.category }}</a></p>
+                {% else %}
+                    Category: <a href="{% url 'category' 'blank' %}">Not defined</a></p>
+                {% endif %}
+                <!-- Category: {{ listing.category }} </p> -->
         </div>
         
     </div>

@@ -8,6 +8,14 @@
     <h2>Listings by {{ listings.0.created_by.username }}</h2>
 {% elif 'mywins' in request.path %}
     <h2>My Wins</h2>
+{% elif 'categories' in request.path %}
+    <h2>Active listings in category:
+      {% if listings.0.category%}
+        {{ listings.0.category }}
+      {% else %}
+        Not defined
+       {% endif %}
+    </h2>
 {% else %}
     <h2>Active Listings</h2>
 {% endif %}

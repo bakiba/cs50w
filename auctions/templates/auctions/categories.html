@@ -1,0 +1,22 @@
+{% extends "auctions/layout.html" %}
+
+{% block title %}
+    Categories
+{% endblock %}
+
+{% block body %}
+    <h2> Categories</h2>
+    {% if not categories %} 
+    There are no categories defined
+    {% else %}
+    <ul>
+        {% for category in categories %}
+            {% if category %}
+                <li><a href="{% url 'category' category %}">{{ category }}</a></li>
+            {% else %}
+            <li><a href="{% url 'category' 'blank' %}">Not defined</a></li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+    {% endif %}
+{% endblock %}

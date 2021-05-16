@@ -143,6 +143,21 @@ def listing_view(request, listing_id):
         "win" : win,
     })
 
+def categories_view(request):
+    q = Listing.objects.filter(active=True).values_list('category', flat=True).distinct()
+    return render(request, "auctions/categories.html", {
+        "categories" : q,
+        
+    })
+def category_view(request, category):
+    if category == "blank":
+        q = Listing.objects.filter(active=True).filter(category='').order_by("created")
+    else:
+        q = Listing.objects.filter(active=True).filter(category=category).order_by("created")
+    return render(request, "auctions/index.html", {
+        "listings" : q,
+        
+    })
 @login_required(login_url='login')
 def user_listing_view(request, user_id):
     #listing = get_object_or_404(Listing, pk=listing_id)   
