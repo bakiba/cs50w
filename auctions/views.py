@@ -14,16 +14,8 @@ from django import template
 register = template.Library()
 
 def index(request):
+    # Retrun all active listings
     listings = Listing.objects.filter(active=True).order_by("created")
-    '''
-    for listing in listings:
-        bids = listing.bids.all()
-        if (bids.values().count()):
-            max_bid = listing.bids.all().values().order_by('-bid')[0]
-            print(max_bid['bid'])
-            #listing.start_bid = max_bid['bid']
-            #print(list(listing))
-    '''
     return render(request, "auctions/index.html", {
         "listings" : listings,
     })
@@ -157,12 +149,15 @@ def listing_view(request, listing_id):
     })
 
 def categories_view(request):
+    # Query all listings and return all distinct values from "category" field as list
     q = Listing.objects.filter(active=True).values_list('category', flat=True).distinct()
     return render(request, "auctions/categories.html", {
         "categories" : q,
         
     })
+
 def category_view(request, category):
+    # Return all listings for given category
     if category == "blank":
         q = Listing.objects.filter(active=True).filter(category='').order_by("created")
     else:
@@ -171,9 +166,10 @@ def category_view(request, category):
         "listings" : q,
         
     })
+
 @login_required(login_url='login')
 def user_listing_view(request, user_id):
-    #listing = get_object_or_404(Listing, pk=listing_id)   
+    # Return all listings for given user   
     q = Listing.objects.filter(created_by=user_id).order_by("created")
     return render(request, "auctions/index.html", {
         "listings" : q,
@@ -182,9 +178,15 @@ def user_listing_view(request, user_id):
     
 @login_required(login_url='login')
 def listing_action(request, listing_id, action):
+    # We're implementing several actions for listing:
+    # add - add listing to watchlist
+    # remove - remove listing from watchlist
+    # close - close listing
     if action == "add":
+        # Adding listing to watchlist
         l = get_object_or_404(Listing, pk=listing_id)
         try:
+            # create entry in watchlist with given listing and user id
             q = Watchlist.objects.create(listing=l, user=request.user)
             q.save()
             messages.success(request, 'Listing added to watchlist.')
@@ -193,9 +195,10 @@ def listing_action(request, listing_id, action):
             messages.error(request, 'Listing already in watchlist.')
             return redirect(request.META['HTTP_REFERER'])
     elif action == "remove":
-        #print("action remove")
+        # Removing listing from watchlist
         l = get_object_or_404(Listing, pk=listing_id)
         try:
+            # retrieve the watchlist item for given user id and listing id
             q = Watchlist.objects.get(listing=l, user=request.user)
             q.delete()
             messages.success(request, 'Listing removed from watchlist.')
@@ -206,11 +209,15 @@ def listing_action(request, listing_id, action):
     elif action == "close":
         # once bid is closed update winner and also remove entry from watchlist for all users who were watching
         listing = get_object_or_404(Listing, pk=listing_id)
+        # Retrieve all bids for the listing in descending order
         b = listing.bids.all().order_by('-bid')
         try:
             if b.exists():
+                # if there were any bids, the first in the list will be the highest = winner
                 listing.winner = User.objects.get(pk=b[0].user_id)
+            # Deactive (close) listing
             listing.active = False
+            # Update listing
             listing.save()
             messages.success(request, 'Listing successfully closed.')
             return redirect(request.META['HTTP_REFERER'])
@@ -223,12 +230,15 @@ def listing_action(request, listing_id, action):
 
 @login_required(login_url='login')
 def watchlist_view(request):
+    # Retrieve all watched listing for the user
     listings = Listing.objects.filter(watchlist__user=request.user).order_by("created")
     return render(request, "auctions/index.html", {
         "listings" : listings,
     })
+
 @login_required(login_url='login')
 def mywins_view(request):
+    # Show all listings where user has won bidding
     listings = Listing.objects.filter(winner=request.user).order_by("created")
     return render(request, "auctions/index.html", {
         "listings" : listings,
