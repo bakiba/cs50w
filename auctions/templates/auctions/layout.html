@@ -4,8 +4,31 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
         <title>{% block title %}Auctions{% endblock %}</title>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <!-- Bootstrap core CSS -->
+        <link href="{% static 'auctions/assets/dist/css/bootstrap.min.css' %}" rel="stylesheet">
+
+        <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+            font-size: 3.5rem;
+            }
+        }
+        </style>
+
+    
+    
         <link href="{% static 'auctions/styles.css' %}" rel="stylesheet">
     </head>
     <body>
@@ -19,62 +42,70 @@
         </div>
         {% endfor %}
         {% endif %}
-        <h1>Auctions</h1>
-        <div>
-            {% if user.is_authenticated %}
-                Signed in as <strong>{{ user.username }}</strong>.
-            {% else %}
-                Not signed in.
-            {% endif %}
-        </div>
-        <ul class="nav">
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'index' %}">Active Listings</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'categories' %}">Categories</a>
-            </li>
-            {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'create' %}">Create Listing</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'userlistings' user.id %}">My Listings</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'mywins' %}">My Wins</a>
-                </li>
-                <li class="nav-item">
-                    {% if user.id|watch_count %}
-                        <a class="nav-link" href="{% url 'watchlist' %}" style="display: inline-block;margin-right: -18px;">Watchlist</a>
-                        <span class="badge bg-secondary text-light">{{user.id|watch_count }}</span>    
+        <header class="p-3 bg-dark text-white">
+            
+            <div class="container">
+                <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+                
+              
+                <!--  <div>
+                        {% if user.is_authenticated %}
+                            Signed in as <strong>{{ user.username }}</strong>.
+                        {% else %}
+                            Not signed in.
+                        {% endif %}
+                    </div> -->
+                    <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+                        <li>
+                            <a class="nav-link px-2 {% if '/' == request.path %}text-secondary{% else %}text-white{% endif %}" href="{% url 'index' %}">Active Listings</a>
+                        </li>
+                        <li>
+                            <a class="nav-link px-2 {% if '/categories' in request.path %}text-secondary{% else %}text-white{% endif %}" href="{% url 'categories' %}">Categories</a>
+                        </li>
+                        {% if user.is_authenticated %}
+                            <li>
+                                <a class="nav-link px-2 {% if '/create' in request.path %}text-secondary{% else %}text-white{% endif %}" href="{% url 'create' %}">Create Listing</a>
+                            </li>
+                            <li>
+                                <a class="nav-link px-2 {% if '/user' in request.path %}text-secondary{% else %}text-white{% endif %}" href="{% url 'userlistings' user.id %}">My Listings</a>
+                            </li>
+                            <li>
+                                <a class="nav-link px-2 {% if '/mywins' in request.path %}text-secondary{% else %}text-white{% endif %}" href="{% url 'mywins' %}">My Wins</a>
+                            </li>
+                            <li>
+                                {% if user.id|watch_count %}
+                                    <a class="nav-link px-2 {% if '/watchlist' in request.path %}text-secondary{% else %}text-white{% endif %}" href="{% url 'watchlist' %}" style="display: inline-block;margin-right: -18px;">Watchlist</a>
+                                    <span class="badge bg-secondary text-light">{{user.id|watch_count }}</span>    
+                                {% else %}
+                                <a class="nav-link px-2 {% if '/watchlist' in request.path %}text-secondary{% else %}text-white{% endif %}" href="{% url 'watchlist' %}">Watchlist</a>
+                                {% endif %}
+                            </li>
+                           
+                        {% endif %}
+                    </ul>
+                    <div class="text-end">
+                    {% if user.is_authenticated %}
+                        Signed in as <strong>{{ user.username }}</strong>.
+                        <a class="btn btn-outline-light me-2" href="{% url 'logout' %}">Log Out</a>
+                
                     {% else %}
-                    <a class="nav-link" href="{% url 'watchlist' %}">Watchlist</a>
+                        <a class="btn btn-outline-light me-2" href="{% url 'login' %}">Log In</a>
+                        <a class="btn btn-warning" href="{% url 'register' %}">Register</a>
+                  
                     {% endif %}
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
-                </li>
-            {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'login' %}">Log In</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'register' %}">Register</a>
-                </li>
-            {% endif %}
-        </ul>
-        <hr>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
         {% block body %}
         {% endblock %}
-        
-        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
         <script>
             $(document).ready(function(){
               $('[data-toggle="tooltip"]').tooltip();   
             });
         </script>
+        <script src="{% static 'auctions/assets/dist/js/bootstrap.bundle.min.js' %}"></script>
+        
     </body>
 </html>

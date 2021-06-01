@@ -2,6 +2,7 @@
 {% load auction_filters %}
 
 {% block body %}
+<div class="container p-4 ml-0">
 {% if 'watchlist' in request.path %}
     <h2>My Watchlist</h2>
 {% elif 'user' in request.path %}
@@ -20,7 +21,7 @@
     <h2>Active Listings</h2>
 {% endif %}
     <!-- layout insipired by https://www.ordinarycoders.com/blog/article/django-models -->
-    <div class="container p-4 ml-0">
+    
         <div class="card-columns">
             {% for l in listings %}
             <div class="card" style="width: 20rem;">
