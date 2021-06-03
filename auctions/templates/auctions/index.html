@@ -2,7 +2,7 @@
 {% load auction_filters %}
 
 {% block body %}
-<div class="container p-4 ml-0">
+
 {% if 'watchlist' in request.path %}
     <h2>My Watchlist</h2>
 {% elif 'user' in request.path %}
@@ -20,43 +20,39 @@
 {% else %}
     <h2>Active Listings</h2>
 {% endif %}
-    <!-- layout insipired by https://www.ordinarycoders.com/blog/article/django-models -->
-    
-        <div class="card-columns">
-            {% for l in listings %}
-            <div class="card" style="width: 20rem;">
-              {% if l.image_url %}
-                
-                    <!-- how to handle missing images taken from https://blog.imagekit.io/how-to-handle-loading-images-that-may-not-exist-on-your-website-92e6c3c6ea63 -->
-                    <!-- image placeholder taken from https://github.com/dwyl/learn-tachyons/issues/46-->
-                    <img src="{{ l.image_url }}" class="card-img" alt="{{ l.title}}" style="object-fit: contain;" onerror="this.onerror=null;this.src='/static/auctions/blank_img.png';">
+    <div class="card-columns">
+        {% for l in listings %}
+        <div class="card" >
+            {% if l.image_url %}
+            
+                <!-- how to handle missing images taken from https://blog.imagekit.io/how-to-handle-loading-images-that-may-not-exist-on-your-website-92e6c3c6ea63 -->
+                <!-- image placeholder taken from https://github.com/dwyl/learn-tachyons/issues/46-->
+                <img src="{{ l.image_url }}" class="card-img" alt="{{ l.title}}" style="object-fit: contain;" onerror="this.onerror=null;this.src='/static/auctions/blank_img.png';">
+            {% endif %}
+            <div class="card-body">
+                <h4 class="card-title mb-0" style="display: inline-block;">{{l.title}}</h4>
+                {% if user.is_authenticated %}
+                    {% is_watched l.id user.id as watched %}
+                    {% if watched %}
+                        <a href="{% url 'listing_action' l.id 'remove' %}" class="badge badge-secondary" data-toggle="tooltip" title="Click to remove">Watchlist</a>
+                    {% endif %}
                 {% endif %}
-                <div class="card-body">
-                    <h4 class="card-title" style="display: inline-block;">{{l.title}}</h4>
-                    {% if user.is_authenticated %}
-                        {% is_watched l.id user.id as watched %}
-                        {% if watched %}
-                            <a href="{% url 'listing_action' l.id 'remove' %}" class="badge badge-secondary" data-toggle="tooltip" title="Click to remove">Watchlist</a>
-                        {% endif %}
-                    {% endif %}
-                    {% if not l.active %}
-                        <span class="badge badge-warning float-right">Closed</span>
-                    {% endif %}
-                    <p class="text-muted">Added: {{l.created}}</p>
-                    <h5>${{l.id|price}}</h5>
-                    <p class="card-text" >{{l.description}}</p>
-                    <a href="{% url 'listing' l.id %}" class="card-link">Details</a>
-                    {% if user.is_authenticated %}
-                        {% is_watched l.id user.id as watched %}
-                        {% if not watched %}
-                            <a href="{% url 'listing_action' l.id 'add' %}" class="card-link float-right">Add to watchlist</a>
-                        {% endif %}    
-                    {% endif %}
-                </div>
+                {% if not l.active %}
+                    <span class="badge badge-warning float-right">Closed</span>
+                {% endif %}
+                <p class="text-muted"><small>Added: {{l.created}}</small></p>
+                <h5>${{l.id|price}}</h5>
+                <p class="card-text" >{{l.description}}</p>
+                <a href="{% url 'listing' l.id %}" class="btn btn-outline-dark btn-sm">Details</a>
+                {% if user.is_authenticated %}
+                    {% is_watched l.id user.id as watched %}
+                    {% if not watched %}
+                        <a href="{% url 'listing_action' l.id 'add' %}" class="btn btn-outline-dark btn-sm float-right">Watch</a>
+                    {% endif %}    
+                {% endif %}
             </div>
-            {% endfor %}
         </div>
-          
-    </div>
-      
+        {% endfor %}
+    </div> 
+    
 {% endblock %}

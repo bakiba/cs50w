@@ -34,9 +34,8 @@ def login_view(request):
             login(request, user)
             return HttpResponseRedirect(reverse("index"))
         else:
-            return render(request, "auctions/login.html", {
-                "message": "Invalid username and/or password."
-            })
+            messages.error(request, "Invalid username and/or password.")
+            return render(request, "auctions/login.html")
     else:
         return render(request, "auctions/login.html")
 
@@ -55,18 +54,16 @@ def register(request):
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
         if password != confirmation:
-            return render(request, "auctions/register.html", {
-                "message": "Passwords must match."
-            })
+            messages.error(request, "Passwords must match.")
+            return render(request, "auctions/register.html")
 
         # Attempt to create new user
         try:
             user = User.objects.create_user(username, email, password)
             user.save()
         except IntegrityError:
-            return render(request, "auctions/register.html", {
-                "message": "Username already taken."
-            })
+            messages.error(request, "Username already taken.")
+            return render(request, "auctions/register.html")
         login(request, user)
         return HttpResponseRedirect(reverse("index"))
     else:
@@ -88,10 +85,8 @@ def create_listing_view(request):
             return HttpResponseRedirect(reverse("index"))
         else:
            # if form is not valid, return data to user
-           return render(request, "auctions/create_listing.html", {
-                "message": "Unable to save form.",
-                "form":form
-            })            
+           messages.error(request, "Unable to save form.")
+           return render(request, "auctions/create_listing.html")            
     else:
         # present the create listing form
         return render(request,"auctions/create_listing.html", {
@@ -109,10 +104,10 @@ def listing_view(request, listing_id):
             try:
                 c = Comment.objects.create(listing=listing, user=request.user, comment=comment)
                 c.save()
-                messages.success(request, "Comment added successfully")
+                messages.success(request, "Comment added successfully.")
                 return redirect(request.META['HTTP_REFERER'])
             except IntegrityError:
-                messages.error(request, 'Comment not submitted.')
+                messages.error(request, "Comment not submitted.")
                 return redirect(request.META['HTTP_REFERER'])
         else:
             # get the submitted bid
