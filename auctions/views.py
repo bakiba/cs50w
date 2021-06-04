@@ -82,7 +82,10 @@ def create_listing_view(request):
             entry.created_by_id = request.user.id
             # and finaly send data to DB
             entry.save()
-            return HttpResponseRedirect(reverse("index"))
+            messages.success(request, "New listing successfully added.")
+            # we need to change requst back to get and display added listing
+            request.method = "GET"
+            return listing_view(request, entry.pk)
         else:
            # if form is not valid, return data to user
            messages.error(request, "Unable to save form.")
