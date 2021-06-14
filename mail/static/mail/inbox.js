@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#inbox').addEventListener('click', () => load_mailbox('inbox'));
   document.querySelector('#sent').addEventListener('click', () => load_mailbox('sent'));
   document.querySelector('#archive').addEventListener('click', () => load_mailbox('archive'));
-  document.querySelector('#compose').addEventListener('click', compose_email);
+  document.querySelector('#compose').addEventListener('click', () => compose_email('new','none'));
   
    // Count unread emails
   
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
 });
 
-function compose_email() {
+function compose_email(mailId, replyType) {
   
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
@@ -26,18 +26,48 @@ function compose_email() {
   document.querySelector('#compose-view').style.display = 'block';
 
   // Clear out composition fields
-  document.querySelector('#compose-recipients').value = '';
-  document.querySelector('#compose-subject').value = '';
-  document.querySelector('#compose-body').value = '';
-
+  if (mailId === 'new') { 
+    console.log(`compose_email: ${mailId}`);
+    document.querySelector('#compose-recipients').value = '';
+    document.querySelector('#compose-subject').value = '';
+    document.querySelector('#compose-body').value = '';
+  } else {
+    // Fetch email to reply to
+    fetch(`/emails/${mailId}`)
+    .then(response => response.json())
+    .then(email => {
+        // Populate fields 
+        document.querySelector('#compose-recipients').value = email.sender;
+        // If the subject line already begins with Re: , no need to add it again.
+        document.querySelector('#compose-subject').value = (email.subject.substr(0, 4) == 'Re: ') ? email.subject : 'Re: ' + email.subject;
+        // Prepend each line of original email with > to visualy differentiate original text
+        document.querySelector('#compose-body').value = '\r\nOn ' + email.timestamp + ' ' + email.sender + ' wrote: \r\n' + email.body.replace(/^/gm, '>');
+        // If reply-all we need to loop though recipients and remove ourselves
+        if (replyType === 'reply') {
+          document.querySelector('#compose-view h3').innerHTML = 'Reply'; 
+        } else {
+          document.querySelector('#compose-view h3').innerHTML = 'Reply All';
+          const mailbox = document.querySelector('.container h2').innerHTML;
+          var replyAllRecipients = [email.sender];
+          email.recipients.forEach(recipient => {
+            if (recipient === mailbox) {
+              return;
+            }
+            replyAllRecipients.push(recipient);
+          });
+          document.querySelector('#compose-recipients').value = replyAllRecipients;
+        }
+    })
+    .catch (error => {
+      console.error(error);
+    });
+  }
   
   // Add event listener to form submit event
   document.querySelector('form').onsubmit = function () {
     const recipients = document.querySelector('#compose-recipients').value;
     const subject = document.querySelector('#compose-subject').value;
     const body = document.querySelector('#compose-body').value;
-    
-    //console.log(`Sending email to ${recipients}`);
 
     fetch('/emails', {
       method:'POST',
@@ -55,7 +85,6 @@ function compose_email() {
         show_message('success', result.message);
         load_mailbox('sent');
       }
-      //console.log(result.message);
     })
     .catch (error => {
       console.error(error);
@@ -229,10 +258,10 @@ function view_email(email_id, mailbox){
   reply_btn.innerHTML='<img src="static/mail/Reply-24.png" alt="Replay"></img>'
   reply_all_btn.innerHTML='<img src="static/mail/Reply-All-24.png" alt="Replay All">'
   reply_btn.addEventListener('click',function () {
-    reply_mail('reply');
+    compose_email(email_id, 'reply');
   });
   reply_all_btn.addEventListener('click', function () {
-    reply_mail('reply-all');
+    compose_email(email_id, 'reply-all');
   });
   // Append reply buttons to reply div
   reply_div.append(reply_btn);
@@ -254,7 +283,7 @@ function view_email(email_id, mailbox){
       <p class="text-muted"><small>To: ${email.recipients}</small></p>
       <hr>
       <div style="min-height: 200px">
-        <p>${email.body}</p>
+        <p>${email.body.replace(/(?:\r\n|\r|\n)/g, '<br>')}</p>
       </div>
       <hr class="mb-0">
       `
@@ -264,7 +293,6 @@ function view_email(email_id, mailbox){
   // Append mailbox div and mail details div to main view email div
   document.querySelector('#view-email').append(mailbox_div);
   document.querySelector('#view-email').append(mail_details);
- 
 }
 
 function mark_read(email_id) {
@@ -276,10 +304,19 @@ function mark_read(email_id) {
   })
 }
 
-function reply_mail(type) {
-  console.log(`pressed reply_mail ${type}`);
-  // TODO
+function mark_unread(email_id) {
+  fetch(`/emails/${email_id}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+        read: false
+    })
+  })
 }
+
+/* function reply_mail(email_id, type) {
+  
+  compose_email(email_id, type);
+} */
 
 function trim_string(subject, length) {
   if ( subject.length > length ) {
