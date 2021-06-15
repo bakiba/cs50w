@@ -161,20 +161,29 @@ function load_mailbox(mailbox) {
         });
       }
       if ( mailbox === 'inbox' ||  mailbox === 'archive' ) {
+        // Create Archive/Move to inbox buttons
         let archive_message = 'Email successfully moved to Archived';
         const btnArchiveTmp = document.createElement('button');
         btnArchiveTmp.className = 'btn btn-sm float-right';
         btnArchiveTmp.type = 'button';
         btnArchiveTmp.setAttribute('data-toggle','tooltip');
         if ( mailbox === 'inbox' ) {
-          btnArchiveTmp.innerHTML = '<img src="static/mail/archive.svg" alt="Archive">'
+          btnArchiveTmp.innerHTML = '<img src="static/mail/archive.svg" width="24" height="24" alt="Archive">'
           btnArchiveTmp.title = 'Move to Archive';
           let archive_message = 'Email successfully archived';
         } else {
-          btnArchiveTmp.innerHTML = '<img src="static/mail/inbox.svg" alt="Inbox">'
+          btnArchiveTmp.innerHTML = '<img src="static/mail/inbox.svg" width="24" height="24" alt="Inbox">'
           btnArchiveTmp.title = 'Move to Inbox';
           archive_message = 'Email successfully moved to Inbox';
         }
+        // Unread button
+        const btnUnreadTmp = document.createElement('button');
+        btnUnreadTmp.className = 'btn btn-sm float-right';
+        btnUnreadTmp.type = 'button';
+        btnUnreadTmp.setAttribute('data-toggle','tooltip');
+        btnUnreadTmp.innerHTML = '<img src="static/mail/envelope-open.svg" width="24" height="24" alt="Read/Unread">'
+        btnUnreadTmp.title = 'Mark Read/Unread';
+        
 
         emails.forEach(mail => {
           const tr = document.createElement('tr');
@@ -206,7 +215,30 @@ function load_mailbox(mailbox) {
               console.error(error);
             });
           });
+          let btnUnread = btnUnreadTmp.cloneNode(true);
+          btnUnread.addEventListener('click', function() {
+            //console.log(`Archive button id: ${mail.id} has been clicked!`);
+            // Button was clicked, call the PUT and either archive or move to inbox
+            fetch(`/emails/${mail.id}`, {
+              method: 'PUT',
+              body: JSON.stringify({
+                  read: !mail.read
+              })
+            })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Network response was not ok');
+              }
+              //console.log('Successfully archived');
+              show_message('success', 'Email marked as Read/Unread');
+              load_mailbox(mailbox);
+            })
+            .catch (error => {
+              console.error(error);
+            });
+          });
           tr.querySelector('td:last-child').append(btnArchive);
+          tr.querySelector('td:last-child').append(btnUnread);
           tr.addEventListener('click', function(event) {
             // We need to see if we clicked Archive button or somewehere inside <TD>
             let target = event.target;
@@ -255,8 +287,8 @@ function view_email(email_id, mailbox){
   reply_all_btn.setAttribute('data-toggle','tooltip');
   reply_all_btn.title='Reply All';
   reply_all_btn.href='#';
-  reply_btn.innerHTML='<img src="static/mail/Reply-24.png" alt="Replay"></img>'
-  reply_all_btn.innerHTML='<img src="static/mail/Reply-All-24.png" alt="Replay All">'
+  reply_btn.innerHTML='<img src="static/mail/reply.svg" width="24" height="24" alt="Replay"></img>'
+  reply_all_btn.innerHTML='<img src="static/mail/reply-all.svg" width="24" height="24" alt="Replay All">'
   reply_btn.addEventListener('click',function () {
     compose_email(email_id, 'reply');
   });
