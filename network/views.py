@@ -1,5 +1,5 @@
 import json
-from django.http import JsonResponse
+from django.http import JsonResponse, request
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
@@ -72,6 +72,11 @@ def register(request):
 
 def posts(request, page=0, post_id=None):
     
+    # if user is not logged, then we do not need user like list
+    if request.user.is_authenticated:
+        likes = User.objects.get(pk=request.user.id).likes.all()
+    else:
+        likes = []
     # New post must be via POST
     if request.method == "POST":
         data = json.loads(request.body)
@@ -79,16 +84,22 @@ def posts(request, page=0, post_id=None):
         content = data.get('content')
         post = Post(user=request.user, title=title, content=content)
         post.save()
-        #print(data, flush=True)
-        # return all posts
-        try:
+    # return all posts from newest to oldest
+    posts = Post.objects.order_by("-created").all()
+    # Show 25 contacts per page.
+    paginator = Paginator(posts, 10) 
+    # if page was set via post or get, jump to that page
+    page_number = request.POST.get('page', request.GET.get('page'))
+    page_obj = paginator.get_page(page_number)
+    return JsonResponse({"pages":{"current":page_obj.number,"total":page_obj.paginator.num_pages},"posts":[post.serialize() for post in page_obj],"likes":[post.id for post in likes]}, safe=False)
+"""         try:
             posts = Post.objects.order_by("-created").all()
             paginator = Paginator(posts, 10) # Show 25 contacts per page.    
             page_number = request.POST.get('page')
             page_obj = paginator.get_page(page_number)
         except Post.DoesNotExist:
             return JsonResponse({"error": "Post not found."}, status=404)
-        return JsonResponse({"pages":{"current":page_obj.number,"total":page_obj.paginator.num_pages},"posts":[post.serialize() for post in page_obj]}, safe=False)
+        return JsonResponse({"pages":{"current":page_obj.number,"total":page_obj.paginator.num_pages},"posts":[post.serialize() for post in page_obj],"likes":[post.id for post in likes]}, safe=False)
     # else we're looking for specific post to edit
     elif request.method == "GET":
         #return JsonResponse({"message": "all ok."}, status=201)
@@ -99,10 +110,32 @@ def posts(request, page=0, post_id=None):
             page_obj = paginator.get_page(page_number)
         except Post.DoesNotExist:
             return JsonResponse({"error": "Post not found."}, status=404)
-        return JsonResponse({"pages":{"current":page_obj.number,"total":page_obj.paginator.num_pages},"posts":[post.serialize() for post in page_obj]}, safe=False)
+        return JsonResponse({"pages":{"current":page_obj.number,"total":page_obj.paginator.num_pages},"posts":[post.serialize() for post in page_obj],"likes":[post.id for post in likes]}, safe=False)
     else:
         return JsonResponse({
             "error": "GET or POST request required."
-        }, status=400)
-    
-    #return render(request, "network/index.html")
+        }, status=400) """
+
+@csrf_exempt
+@login_required
+def like(request, post_id):
+    if request.user.is_authenticated == None:
+        return JsonResponse({"error": "User must login to like."}, status=404)   
+    if request.method == "PUT":
+        # Query for requested post 
+        try:
+            post = Post.objects.get(pk=post_id)
+        except Post.DoesNotExist:
+            return JsonResponse({"error": "Post not found."}, status=404)    
+        if (post.user == request.user):
+            #Can't like own post
+            return JsonResponse({"likeBtnTxt":"Like", "likes":post.likes_count()})
+        if (request.user in post.likes.all()):
+            #Unlike the post
+            post.likes.remove(request.user)
+            #Set button back to "Like" so we can like it again
+            return JsonResponse({"likeBtnTxt":"Like", "likes":post.likes_count()})
+        #Like post
+        post.likes.add(request.user)
+        return JsonResponse({"likeBtnTxt":"Unlike", "likes":post.likes_count()}) 
+        
