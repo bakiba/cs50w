@@ -1,0 +1,54 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+<div id="profile">
+    
+    <h3 class="position-relative">{{ profile |title }}'s Profile
+    {% if user.is_authenticated %}
+        {% if user.username != profile %}
+            {% if user.username in followers %}
+                <span class="position-absolute top-0 start-100 btn-sm"><a href="{% url 'follow' profile %}" class="badge badge-secondary" data-toggle="tooltip" title="Click to unfollow {{ profile |title }}">Unfollow</a></span>
+            {% else %}    
+                <span class="position-absolute top-0 start-100 btn-sm"><a href="{% url 'follow' profile %}" class="badge badge-secondary" data-toggle="tooltip" title="Click to follow {{ profile |title }}">Follow</a></span>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+    </h3>
+    <hr>
+    <div class="row">
+        <div class="col">
+            Following
+        </div>
+        <div class="col">
+            Followers
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col">
+            {{ following | length }}
+        </div>
+        <div class="col">
+            {{ followers | length}}
+        </div>
+    </div>
+</div>
+<h2 class="float-left">{{ profile |title }}'s Posts</h2>
+<nav aria-label="Post navigation">
+    <ul id="pagination" class="pagination justify-content-end">   
+    </ul>
+</nav>
+<hr>
+<div id="posts-view">
+</div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        var AuthenticatedUser = '{{request.user}}';
+        var UserProfile = '{{profile}}';
+        //console.log(`User is: ${AuthenticatedUser}`);
+    </script>
+    <script src="{% static 'network/posts.js' %}"></script>
+{% endblock %}

@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.core.paginator import Paginator
 
@@ -69,8 +69,7 @@ def register(request):
         return render(request, "network/register.html")
 
 @csrf_exempt
-
-def posts(request, page=0, post_id=None):
+def posts(request, page=0, post_id=None, profile=None):
     
     # if user is not logged, then we do not need user like list
     if request.user.is_authenticated:
@@ -84,8 +83,14 @@ def posts(request, page=0, post_id=None):
         content = data.get('content')
         post = Post(user=request.user, title=title, content=content)
         post.save()
+    # if profile parameter is set
+    profile = request.POST.get('profile', request.GET.get('profile'))
+    # if profile is given, return only posts for that user
+    if profile != None and profile != 'undefined' and profile != 'null':
+        posts = Post.objects.filter(user__username=profile).order_by("-created").all()
     # return all posts from newest to oldest
-    posts = Post.objects.order_by("-created").all()
+    else:
+        posts = Post.objects.order_by("-created").all()
     # Show 25 contacts per page.
     paginator = Paginator(posts, 10) 
     # if page was set via post or get, jump to that page
@@ -117,7 +122,7 @@ def posts(request, page=0, post_id=None):
         }, status=400) """
 
 @csrf_exempt
-@login_required
+@login_required(login_url='login')
 def like(request, post_id):
     if request.user.is_authenticated == None:
         return JsonResponse({"error": "User must login to like."}, status=404)   
@@ -138,4 +143,38 @@ def like(request, post_id):
         #Like post
         post.likes.add(request.user)
         return JsonResponse({"likeBtnTxt":"Unlike", "likes":post.likes_count()}) 
-        
+    
+
+def profile(request, user):
+    # get the user object
+    profile = User.objects.get(username=user)
+    following = list(user.username for user in profile.following.all())
+    followers = list(user.username for user in profile.followers.all())
+
+    return render(request, "network/profile.html", {
+        "profile":profile.username,
+        "following":following, 
+        "followers":followers
+    })
+
+
+@login_required(login_url='login')
+def follow(request, user):
+    if request.user.is_authenticated == None:
+        return redirect(request.META['HTTP_REFERER'])  
+    # Query for requested post 
+    try:
+        profile = User.objects.get(username=user)
+    except User.DoesNotExist:
+        return redirect(request.META['HTTP_REFERER'])     
+    if (profile.username == request.user):
+        #Can't follow self
+        return redirect(request.META['HTTP_REFERER']) 
+    if (request.user in profile.followers.all()):
+        #Unfollow the user
+        profile.followers.remove(request.user)
+        #Set button back to "Follow" so we can follow user again
+        return redirect(request.META['HTTP_REFERER']) 
+    #Follow the user
+    profile.followers.add(request.user)
+    return redirect(request.META['HTTP_REFERER'])  

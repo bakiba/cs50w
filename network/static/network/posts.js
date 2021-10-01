@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
-    load_posts();
+    
     // Add event listener to form submit event
     const post_form =  document.getElementById('post-form');
+    const profile_view =  document.getElementById('profile');
     if (post_form) {
         post_form.onsubmit = function () {
             const title = document.querySelector('#post-title').value;
@@ -26,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     document.querySelector('#posts-view').innerHTML = '';
 
                     //load all posts
-                    load_posts(posts, null, 1);
+                    load_posts(posts, null, 1,null);
                 })
                 .catch(error => {
                     console.error(error);
@@ -37,14 +38,19 @@ document.addEventListener('DOMContentLoaded', function () {
             return false;
         };
     }
+    if (profile_view) {
+        load_posts(null, null, 1, UserProfile);
+    } else {
+        load_posts();
+    }
 
 });
 
-function load_posts(data, post_id, page) {
+function load_posts(data, post_id, page, profile) {
     //console.log(`page was: ${page}`);
     if (page == undefined) { page = 1 }
     if (data != undefined) {
-        set_pagination(data.pages.current, data.pages.total)
+        set_pagination(data.pages.current, data.pages.total, profile)
         data.posts.forEach((post, index) => {
             const post_div = document.createElement('div');
             if (index === 0) {
@@ -61,7 +67,7 @@ function load_posts(data, post_id, page) {
             post_div.innerHTML = `
             <div class="card-body">
             <h5 class="card-title" style="display: inline;">${post.title}</h5> <span class="float-right text-muted small">${post.created}</span>
-              <h6 class="card-subtitle mb-2 text-muted">by ${post.user}</h6>
+              <h6 class="card-subtitle mb-2 text-muted">by <a href="/profile/${post.user}">${post.user}</a></h6>
               <p class="card-text">${post.content}</p>
               
                 <button id="like_btn_${post.id}" type="button" class="btn btn-outline-primary btn-sm">
@@ -94,7 +100,7 @@ function load_posts(data, post_id, page) {
             }
         });
     } else {
-        fetch(`/posts?page=${page}`, {
+        fetch(`/posts?page=${page}&profile=${profile}`, {
             method: 'GET'
         })
             .then(response => response.json())
@@ -102,7 +108,7 @@ function load_posts(data, post_id, page) {
                 //console.log('Successfully archived');
                 //set pagination
                 //console.log(data.pages.current);
-                set_pagination(data.pages.current, data.pages.total)
+                set_pagination(data.pages.current, data.pages.total, profile)
                 // load posts
                 data.posts.forEach(post => {
                     const post_div = document.createElement('div');
@@ -115,7 +121,7 @@ function load_posts(data, post_id, page) {
                     post_div.innerHTML = `
                     <div class="card-body">
                     <h5 class="card-title" style="display: inline;">${post.title}</h5> <span class="float-right text-muted small">${post.created}</span>
-                      <h6 class="card-subtitle mb-2 text-muted">by ${post.user}</h6>
+                      <h6 class="card-subtitle mb-2 text-muted">by <a href="/profile/${post.user}">${post.user}</a></h6>
                       <p class="card-text">${post.content}</p>
                       
                         <button id="like_btn_${post.id}" type="button" class="btn btn-outline-primary btn-sm">
@@ -165,7 +171,7 @@ function show_message(type, message) {
     document.querySelector('#new-post').before(message_div);
 }
 
-function set_pagination(current, total) {
+function set_pagination(current, total, profile) {
     //console.log(`Entering set_pagination current:${current}, total:${total}`);
     //clear previous pagination elements
     const pagination = document.querySelector('#pagination');
@@ -189,14 +195,14 @@ function set_pagination(current, total) {
         page_prev.classList.add("disabled")
     } else {
         page_prev.classList.remove("disabled")
-        page_prev.addEventListener('click', function() { load_posts(null, null, current-1);}, { once: true });
+        page_prev.addEventListener('click', function() { load_posts(null, null, current-1, profile);}, { once: true });
     }
     // set next button disable/enable state
     if (current == total) {
         page_next.classList.add("disabled")
     } else {
         page_next.classList.remove("disabled")
-        page_next.addEventListener('click', function () { load_posts(null, null, current+1);}, { once: true });
+        page_next.addEventListener('click', function () { load_posts(null, null, current+1, profile);}, { once: true });
     }
     pagination.appendChild(page_prev);
     pagination.appendChild(page_next);
@@ -206,7 +212,7 @@ function set_pagination(current, total) {
     //first version - show pagination: for all pages: for (let i = total; i >= 1; i--) {
     //second version - show only max_pages but pagination flows only in one direction: for (let i = Math.max(current , max_pages); i >= Math.max(1, current - max_pages +1 ); i--) {
     // current version - show only max_pages and flow pagination in both directions, does not work nice with even numbers :)
-    const max_pages = 5;
+    const max_pages = (total < 5) ? total : 5;
     for (let i = Math.min(total, Math.max(max_pages, current + Math.floor(max_pages/2))); i >= Math.min(total-max_pages+1, Math.max(1,current - Math.floor(max_pages/2))); i--) {
         const post_page = document.createElement('li');
         post_page.id = 'page_num'
@@ -219,7 +225,7 @@ function set_pagination(current, total) {
         post_page.innerHTML = `<a class="page-link" href="#">${i}</a>`;
         post_page.addEventListener('click', function () {
             //console.log('This element has been clicked!')
-            load_posts(null, null, i);
+            load_posts(null, null, i, profile);
         });
         page_prev.after(post_page);
     }
