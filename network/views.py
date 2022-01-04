@@ -84,9 +84,11 @@ def posts(request, page=0, post_id=None, profile=None):
         post = Post(user=request.user, title=title, content=content)
         post.save()
     # if profile parameter is set
-    profile = request.POST.get('profile', request.GET.get('profile').split(','))
+    profile = request.POST.get('profile', request.GET.get('profile'))
+    if profile is not None:
+        profile = profile.split(',')
     # if profile is given, return only posts for that user
-    #print(f"Profile: {profile}")
+    print(f"Profile: {profile}")
     if profile != None and profile != ['undefined'] and profile != 'null':
         posts = Post.objects.filter(user__username__in=profile).order_by("-created").all()
     # return all posts from newest to oldest
