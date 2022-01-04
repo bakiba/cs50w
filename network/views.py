@@ -85,9 +85,12 @@ def posts(request, page=0, post_id=None, profile=None):
         post.save()
     # if profile parameter is set
     profile = request.POST.get('profile', request.GET.get('profile'))
+    if profile is not None:
+        profile = profile.split(',')
     # if profile is given, return only posts for that user
-    if profile != None and profile != 'undefined' and profile != 'null':
-        posts = Post.objects.filter(user__username=profile).order_by("-created").all()
+    print(f"Profile: {profile}")
+    if profile != None and profile != ['undefined'] and profile != 'null':
+        posts = Post.objects.filter(user__username__in=profile).order_by("-created").all()
     # return all posts from newest to oldest
     else:
         posts = Post.objects.order_by("-created").all()
@@ -177,4 +180,13 @@ def follow(request, user):
         return redirect(request.META['HTTP_REFERER']) 
     #Follow the user
     profile.followers.add(request.user)
-    return redirect(request.META['HTTP_REFERER'])  
+    return redirect(request.META['HTTP_REFERER'])
+
+@login_required(login_url='login')
+def following(request):
+    profile = User.objects.get(username=request.user)
+    following = list(user.username for user in profile.following.all())
+    return render(request, "network/following.html", {
+        "profile":profile.username,
+        "following":following
+    })  

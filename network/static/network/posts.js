@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Add event listener to form submit event
     const post_form =  document.getElementById('post-form');
     const profile_view =  document.getElementById('profile');
+    const following_view =  document.getElementById('following');
     if (post_form) {
         post_form.onsubmit = function () {
             const title = document.querySelector('#post-title').value;
@@ -38,8 +39,8 @@ document.addEventListener('DOMContentLoaded', function () {
             return false;
         };
     }
-    if (profile_view) {
-        load_posts(null, null, 1, UserProfile);
+    if (profile_view || following_view ) {
+        load_posts(null, null, 1, UserProfile);        
     } else {
         load_posts();
     }
