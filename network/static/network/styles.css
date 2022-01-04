@@ -5,17 +5,19 @@
         padding: 0px;
         margin-bottom: 0px;
     }
+
     100% {
         opacity: 1;
-        line-height: 100%;
+        /*line-height: 100%;*/
         /*animating max-height is not ideal because if content is larger than max-height, it will not fit*/
-        max-height: 150px;
+        max-height: 500px;
+        
     }
 }
 .anime {
     animation-name: appear;
-    animation-duration: 2s;
+    animation-duration: 3s;
     animation-fill-mode: forwards;
-    animation-play-state: running; 
+    /*animation-play-state: running; */
     
 }
