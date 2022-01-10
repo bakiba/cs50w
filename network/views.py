@@ -88,7 +88,7 @@ def posts(request, page=0, post_id=None, profile=None):
     if profile is not None:
         profile = profile.split(',')
     # if profile is given, return only posts for that user
-    print(f"Profile: {profile}")
+    #print(f"Profile: {profile}")
     if profile != None and profile != ['undefined'] and profile != 'null':
         posts = Post.objects.filter(user__username__in=profile).order_by("-created").all()
     # return all posts from newest to oldest
@@ -189,4 +189,29 @@ def following(request):
     return render(request, "network/following.html", {
         "profile":profile.username,
         "following":following
-    })  
+    })
+
+@csrf_exempt
+@login_required(login_url='login')
+def edit(request, post_id):
+    # First verify that user is authenticated
+    if request.user.is_authenticated == None:
+        return JsonResponse({"error": "User must login to edit post."}, status=404)   
+    if request.method == "POST":
+        # Query for requested post 
+        try:
+            post = Post.objects.get(pk=post_id)
+        except Post.DoesNotExist:
+            return JsonResponse({"error": "Post not found."}, status=404)    
+        if (post.user != request.user):
+            #Can't update someone elses post
+            return JsonResponse({"error":"Can't update someone else's post!"}, status=404)
+        # Update post
+        data = json.loads(request.body)
+        title = data.get('title')
+        content = data.get('content')
+        post.title = title
+        post.content = content
+        post.save()
+        #ost.likes.add(request.user)
+        return JsonResponse(post.serialize()) 

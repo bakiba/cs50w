@@ -31,7 +31,6 @@
     <script>
         var AuthenticatedUser = '{{request.user}}';
         var UserProfile = {{ following | safe }};
-        console.log(`We're following: ${UserProfile}`);
     </script>
     <script src="{% static 'network/posts.js' %}"></script>
 {% endblock %}
