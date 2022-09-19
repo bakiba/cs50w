@@ -1,0 +1,25 @@
+version: '3.7'
+
+services:
+  app:
+    build:
+      context: .
+    command: bash -c "python manage.py migrate --noinput && python manage.py collectstatic --no-input --clear && gunicorn --bind 0.0.0.0:5000 capstone.wsgi:application"
+    volumes:
+      - static_volume:/app/staticfiles
+    expose:
+      - 5000
+    env_file:
+      - ./.env
+  nginx:
+    build:
+      context: ./nginx
+    volumes:
+      - static_volume:/app/staticfiles
+    ports:
+      - 80:80
+    depends_on:
+      - app
+
+volumes:
+  static_volume:
