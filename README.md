@@ -16,7 +16,7 @@ Web application is build using Django which is packed into docker containers run
 
        sudo docker-compose up -d --build
 
-* if you want to run standalone Django, ensure you have python 3.9 installed and run following:
+* if you want to run standalone Django, ensure you have python 3.x installed and run following:
 
        python3 -m venv env
        . env/bin/activate
