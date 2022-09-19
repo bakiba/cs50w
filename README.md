@@ -21,9 +21,9 @@ Web application is build using Django which is packed into docker containers run
        python3 -m venv env
        . env/bin/activate
        pip install --upgrade pip
-       pip install -r requirements.txt
+       pip install django
        set -a && source .env && set +a
-       python capstone\manage.py runserver 0.0.0.0:5000
+       python capstone/manage.py runserver 0.0.0.0:5000
 
       
 
