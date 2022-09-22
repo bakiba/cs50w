@@ -17,6 +17,8 @@ Web application is build using Django which is packed into docker containers run
        sudo docker-compose up -d --build
 
 * if you want to run standalone Django, ensure you have python 3.x installed and run following:
+       
+  Linux:
 
        python3 -m venv env
        . env/bin/activate
@@ -25,5 +27,12 @@ Web application is build using Django which is packed into docker containers run
        set -a && source .env && set +a
        python capstone/manage.py runserver 0.0.0.0:5000
 
-      
+  Windows:
+
+       .\python3 -m venv env
+       .\env\Scripts\Activate.ps1
+       pip install --upgrade pip
+       pip install django
+       .\load_env.ps1   
+       python .\capstone\manage.py runserver 127.0.0.1:7000 
 
