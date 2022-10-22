@@ -10,7 +10,7 @@ Web application is build using Django which is packed into docker containers run
         
         DEBUG=1
         DJANGO_SECRET_KEY=some string of random characters
-        DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1] *
+        DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,[::1],*
 
 * if you want to deploy to docker containers, ensure docker is installed and run:
 
