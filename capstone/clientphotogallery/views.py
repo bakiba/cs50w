@@ -64,7 +64,7 @@ class UserRegisterView(CreateView):
 class GalleryListVew(LoginRequiredMixin,ListView):
     login_url = '/dashboard/login/'
     model=Gallery
-    template_name='clientphotogallery/gallerylist.html'
+    template_name='clientphotogallery/dashboard.html'
     context_object_name='galleries'
 
     def get_queryset(self, **kwargs):
@@ -73,17 +73,17 @@ class GalleryListVew(LoginRequiredMixin,ListView):
         return queryset
 
 class GalleryDetailedView(LoginRequiredMixin, UserIsOwner, DetailView):
-    login_url = '/user/login/'
+    login_url = '/dashboard/login/'
     model=Gallery
-    template_name='app/gallerydetail.html'
+    template_name='clientphotogallery/gallerydetail.html'
     context_object_name='gallery'
 
 class GalleryCreateView(LoginRequiredMixin, CreateView):
-    login_url = '/user/login/'
+    login_url = '/dashboard/login/'
     form_class = GalleryCreateForm
     model=Gallery
     #fields=['title','description','password']
-    template_name='app/gallerycreate.html'
+    template_name='clientphotogallery/gallerycreate.html'
     
     def get_success_url(self):
         return self.request.GET.get('next', reverse_lazy('list'))
