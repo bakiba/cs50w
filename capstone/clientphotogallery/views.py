@@ -105,7 +105,7 @@ class GalleryCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 class GalleryEditView(LoginRequiredMixin, UserIsOwner, UpdateView):
-    template_name = 'app/galleryedit.html'
+    template_name = 'clientphotogallery/galleryedit.html'
     form_class = GalleryEditForm
     model = Gallery
     #success_url=reverse_lazy('list')
@@ -128,8 +128,8 @@ class GalleryEditView(LoginRequiredMixin, UserIsOwner, UpdateView):
         return super().form_valid(form)
 
 class GalleryDeleteView(LoginRequiredMixin, UserIsOwner, DeleteView):
-    login_url = '/user/login/'
-    template_name = 'app/gallerydelete.html'
+    login_url = '/dashboard/login/'
+    template_name = 'clientphotogallery/gallerydelete.html'
     model = Gallery
     success_url=reverse_lazy('list')
   
@@ -162,16 +162,16 @@ def ClientLandingView(request):
         gallery_id  = request.POST.get('gallery_id',request.GET.get('gallery_id'))
         
         if not is_valid_uuid(gallery_id):
-            return render(request, "app/clientlanding.html", { "message":"Gallery removed or not found" })
+            return render(request, "clientphotogallery/clientlanding.html", { "message":"Gallery removed or not found" })
         
         try:
             gallery = Gallery.objects.get(pk=gallery_id)
             return redirect('clientgalleryview', pk=gallery.id)
         except Gallery.DoesNotExist:
-            return render(request, "app/clientlanding.html", { "message":"Gallery removed or not found" })
+            return render(request, "clientphotogallery/clientlanding.html", { "message":"Gallery removed or not found" })
             
     else:
-        return render(request, "app/clientlanding.html")
+        return render(request, "clientphotogallery/clientlanding.html")
 
 def ClientGalleryView(request, pk=None):
     
@@ -198,13 +198,13 @@ def ClientGalleryView(request, pk=None):
         try:
             gallery = Gallery.objects.get(pk=pk)
         except Gallery.DoesNotExist:
-            return render(request, "app/clientlanding.html", { "message":"Gallery removed or not found" })
+            return render(request, "clientphotogallery/clientlanding.html", { "message":"Gallery removed or not found" })
         
         if gallery.archived or not gallery.enabled:
-            return render(request, "app/clientlanding.html", { "message":"Gallery removed or not found" })
+            return render(request, "clientphotogallery/clientlanding.html", { "message":"Gallery removed or not found" })
         
         if not gallery.password:
-            return render(request, "app/clientgalleryview.html", { "gallery":gallery, "clientData":clientData })
+            return render(request, "clientphotogallery/clientgalleryview.html", { "gallery":gallery, "clientData":clientData })
         else:
             
             # if password not provided via POST/GET
@@ -212,7 +212,7 @@ def ClientGalleryView(request, pk=None):
                 # and no session
                 if not gal_session:
                     # ask to submit password
-                    return render(request,"app/clientgalleryauth.html", {
+                    return render(request,"clientphotogallery/clientgalleryauth.html", {
                             "gallery_id":gallery.id, 
                             "gallery_title":gallery.title
                             })
@@ -222,7 +222,7 @@ def ClientGalleryView(request, pk=None):
                     if gal_session == gallery.password:
                         print("entered here")
                         #sessionData = '{"clientid":"test"}'
-                        return render(request, "app/clientgalleryview.html", { "gallery":gallery, "clientData":clientData }) 
+                        return render(request, "clientphotogallery/clientgalleryview.html", { "gallery":gallery, "clientData":clientData }) 
                     # if password is not matching, ask to submit password
                     else:
                         # we need to clear any previous clientData session we migh have
@@ -230,7 +230,7 @@ def ClientGalleryView(request, pk=None):
                             del request.session['clientData']
                         except KeyError:
                             pass
-                        return render(request,"app/clientgalleryauth.html", {
+                        return render(request,"clientphotogallery/clientgalleryauth.html", {
                             "gallery_id":gallery.id, 
                             "gallery_title":gallery.title
                             })
@@ -240,14 +240,14 @@ def ClientGalleryView(request, pk=None):
                 if gal_pw == gallery.password:
                     request.session['gallery_password'] = gal_pw
                     
-                    return render(request, "app/clientgalleryview.html", { "gallery":gallery, "clientData":clientData })    
+                    return render(request, "clientphotogallery/clientgalleryview.html", { "gallery":gallery, "clientData":clientData })    
                 # if password is not correct, ask to submit password
                 else:
                     try:
                         del request.session['clientData']
                     except KeyError:
                         pass
-                    return render(request,"app/clientgalleryauth.html", {
+                    return render(request,"clientphotogallery/clientgalleryauth.html", {
                             "gallery_id":gallery.id, 
                             "gallery_title":gallery.title
                             })
@@ -261,7 +261,7 @@ def clientLogout(request):
 def clientLogin(request, clientid):
     
     if not request.session.get('gallery_password', False):
-        return render(request, "app/clientlanding.html", {"message":"You must have valid session"})
+        return render(request, "clientphotogallery/clientlanding.html", {"message":"You must have valid session"})
 
     try:
         client = Client.objects.get(identifier=clientid)
@@ -284,10 +284,10 @@ def clientLogin(request, clientid):
 
 def toggleAssetSelection(request, assetid):
     if not request.session.get('gallery_password', False):
-        return render(request, "app/clientlanding.html", {"message":"You must have valid session"})
+        return render(request, "clientphotogallery/clientlanding.html", {"message":"You must have valid session"})
     
     if not request.session.get('clientData', False):
-        return render(request, "app/clientlanding.html", {"message":"You must have valid clientid"})
+        return render(request, "clientphotogallery/clientlanding.html", {"message":"You must have valid clientid"})
 
     clientData = request.session.get('clientData', False)
 
@@ -310,10 +310,10 @@ def toggleAssetSelection(request, assetid):
 
 def setPrintCount(request, assetid, print_count):
     if not request.session.get('gallery_password', False):
-        return render(request, "app/clientlanding.html", {"message":"You must have valid session"})
+        return render(request, "clientphotogallery/clientlanding.html", {"message":"You must have valid session"})
 
     if not request.session.get('clientData', False):
-        return render(request, "app/clientlanding.html", {"message":"You must have valid clientid"})
+        return render(request, "clientphotogallery/clientlanding.html", {"message":"You must have valid clientid"})
 
     clientData = request.session.get('clientData', False)
 

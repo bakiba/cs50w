@@ -1,0 +1,61 @@
+{% extends "clientphotogallery/layout.html" %}
+{% load crispy_forms_tags %}
+
+{% block body %}
+<main>
+  <div class="container-fluid px-4">
+    <h1 class="mt-4">Edit Gallery</h1>  
+    <div class="form-group">
+        <form action="" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="form-group col-md-6 mb-0">
+            {{ form.title|as_crispy_field }}
+          </div>
+          <div class="form-group col-md-6 mb-0">
+            {{ form.description|as_crispy_field }}
+          </div>
+          <div class="form-group col-md-6 mb-0">
+            <label for="id_password" class="form-label">{{ form.password.label }}</label>
+            <div class="input-group mb-3">
+              <input type="text" id="id_password" name="{{ form.password.name }}" class="text input form-control" value="{{ form.password.value}}" placeholder="Gallery password" aria-label="Gallery password" aria-describedby="button-addon2"> 
+              <button type="button" class="btn btn-outline-secondary" id="generateRandPw">Generate random</button>
+            </div>
+          </div>
+          <div class="form-group col-md-6 mb-0">
+            {{ form.file_field|as_crispy_field }}
+          </div>
+          <div class="form-group col-md-6 mb-0">
+            <div class="form-check form-check-inline">
+              {{ form.enabled|as_crispy_field }}
+            </div>
+            <div class="form-check form-check-inline">
+              {{ form.archived|as_crispy_field }}
+            </div>
+          </div>
+          <button type="submit" class="btn btn-success mb-3">Save</button>
+          <a href="{{ view.get_success_url }}" class="btn btn-danger mb-3">Cancel</a>
+        </form>
+        
+    </div>
+  </div> 
+</main>  
+{% endblock body %}
+
+{% block script %}
+<script>
+  //https://stackoverflow.com/a/1349426
+  function makepw(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+  }
+ document.querySelector('#generateRandPw').addEventListener('click', function() {
+    
+    document.querySelector('#id_password').value = makepw(4) + '-' + makepw(4)
+ });
+</script>
+{% endblock %}
