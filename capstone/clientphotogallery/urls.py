@@ -1,10 +1,46 @@
 from django.urls import path
+from django.contrib.auth.views import LogoutView
 
-from . import views
+from .views import (
+    index,
+    dashboard,
+    charts,
+    tables,
+    GalleryCreateView,
+    GalleryDetailedView,
+    GalleryEditView,
+    GalleryDeleteView,
+    GalleryListVew,
+    UserLoginView,
+    UserRegisterView,
+    GalleryAssetRemoveView,
+    ClientLandingView,
+    ClientGalleryView,
+    toggleAssetSelection,
+    setPrintCount,
+    clientLogin,
+    clientLogout,
+
+)
 
 urlpatterns = [
-    path('', views.index, name='index'),
-    path('dashboard/index.html', views.dashboard, name='dashboard'),
-    path('dashboard/charts.html', views.charts, name='charts'),
-    path('dashboard/tables.html', views.tables, name='tables'),
+    path('', index, name='index'),
+    path('dashboard/index.html', dashboard, name='dashboard'),
+    path('dashboard/charts.html', charts, name='charts'),
+    path('dashboard/tables.html', tables, name='tables'),
+    path('gallery/list',GalleryListVew.as_view(),name='list'),
+    path('gallery/<uuid:pk>/', GalleryDetailedView.as_view(), name='detail'),
+    path('gallery/create/', GalleryCreateView.as_view(), name='create'),
+    path('gallery/<uuid:pk>/edit/', GalleryEditView.as_view(), name='edit'),
+    path('gallery/<uuid:pk>/delete/', GalleryDeleteView.as_view(), name='delete'),
+    path('gallery/<uuid:pk>/<int:id>/remove/', GalleryAssetRemoveView.as_view(), name='remove'),
+    path('dashboard/login/', UserLoginView.as_view(), name='login'),
+    path('user/logout/', LogoutView.as_view(next_page='login'), name='logout'),
+    path('user/register/', UserRegisterView.as_view(), name='register'),
+    #path('', ClientLandingView, name='clientlandingview'),
+    path('<uuid:pk>/', ClientGalleryView, name='clientgalleryview'),
+    path('api/clientlogout/', clientLogout, name='clientlogout'),
+    path('api/clientlogin/<str:clientid>/', clientLogin, name='clientlogin'),
+    path('api/selectasset/<int:assetid>/', toggleAssetSelection, name='selectasset'),
+    path('api/setprintcount/<int:assetid>/<int:print_count>/', setPrintCount, name='setprintcount'),
 ]
