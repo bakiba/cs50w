@@ -1,0 +1,481 @@
+{% load app_filters %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Client Photo Gallery</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/simplelightbox/2.7.0/simple-lightbox.css" integrity="sha512-8WAX0xL/cHZ38RXoX2gtuqkAwmDVAzGwoFVmHvn46IDHGWOjTHx0vcl9OapNrfOzpFtql0SNkv+0y0b5Fm8ZkA==" crossorigin="anonymous" />
+    <style>
+    /* https://stackoverflow.com/questions/22920589/bootstrap-3-boostrap-4-bootstrap-5-input-xs-smaller-than-sm#22920590 */
+    .input-group-xs>.form-control,
+    .input-group-xs>.btn {
+        height: 22px;
+        padding: 1px 5px;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+    </style>
+</head>
+  <body>
+    <main class="container py-5">
+        <div class="btn-toolbar justify-content-between">
+        <h1>{{ gallery.title }}</h1>
+        {% if clientData %}
+            <!-- logout -->
+            <h2 class="align-self-center" id="loginButton"><a href="#" class="text-reset" id="clientLogout"><i class="bi bi-box-arrow-right"></i></a></h2>    
+        {% else %}
+            <!-- login -->
+            <h2 class="align-self-center" id="loginButton"><a href="#" class="text-reset" id="clientLogin"><i class="bi bi-box-arrow-in-right"></i></a></h2>    
+        {% endif %}
+        </div>
+        <!-- <h5>{{ clientData.selection }}</h5> -->
+        <!-- {% for key in clientData.selection %}
+        <p>{{ key.asset_id }}</p>
+        {% endfor %} -->
+        <section class="photo_gallery">
+            <div class="row">
+            {% for object in gallery.assets.all %}               
+                <div class="masonry col-lg-4 col-md-4 col-12" >
+                    <div class="text-center mt-2">
+                        <a href="{{object.file.url}}"><img src="{{object.file.url}}" class="img-thumbnail" alt="..."/></a>
+                        <!-- <p>{{ object.id }}</p>     -->
+                        <!-- <div class="row justify-content-between"> -->
+                        <div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
+                            <div class="col">
+                                <div class="form-check form-switch text-start">
+                                    {% if clientData and clientData.selection|asset_in_listdic:object.id %} 
+                                        <input class="form-check-input" type="checkbox" value="" id="pic_select_{{ object.id }}" checked>
+                                    {% else %}
+                                        <input class="form-check-input" type="checkbox" value="" id="pic_select_{{ object.id }}">
+                                    {% endif %}
+                                    
+                                    <label class="form-check-label" for="flexCheckDefault">Select</label>
+                                </div>
+                            </div>
+                            <div class="col mt-1" style="max-width: 100px;">
+                                <div class="input-group input-group-xs mb-3">
+                                    {% if clientData and clientData.selection|asset_in_listdic:object.id %} 
+                                        <button class="btn btn-outline-secondary " type="button" id="print_minus_{{object.id}}"><i class="bi bi-dash"></i></button>
+                                        <input  type="text text-center" style="text-align:center;" id="print_count_{{object.id}}" value="{{ clientData.selection|get_print_count:object.id }}" class="form-control input-number" aria-label="Enter number of desired prints" aria-describedby="button-addon1">
+                                        <button class="btn btn-outline-secondary" type="button" id="print_plus_{{object.id}}"><i class="bi bi-plus"></i></button>
+                                    {% else %}
+                                        <button class="btn btn-outline-secondary " type="button" id="print_minus_{{object.id}}" disabled><i class="bi bi-dash"></i></button>
+                                        <input  type="text text-center" style="text-align:center;" id="print_count_{{object.id}}" class="form-control input-number" aria-label="Enter number of desired prints" aria-describedby="button-addon1" disabled>
+                                        <button class="btn btn-outline-secondary" type="button" id="print_plus_{{object.id}}" disabled><i class="bi bi-plus"></i></button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col text-end">
+                                {% if object.get_comments|length %}
+                                <i class="bi bi-chat-text"></i>
+                                {% else %}
+                                <i class="bi bi-chat"></i>
+                                {% endif %}
+                                Comment
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        </section>
+    </main>
+    <section id="modalSection"></section>
+    <!-- <div class="modal fade" id="getClientID" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="getClientID" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="getClientIDTitle">Modal title</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            Hello Modal!
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Understood</button>
+            </div>
+        </div>
+        </div>
+    </div> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simplelightbox/2.7.0/simple-lightbox.min.js" integrity="sha512-ZajFBgnksNp8Rj+AbmYe8ueOu45HiSjtf3QpqnRbHlq719m6VK0FkbYIqQ8wEnlVuJ1i9pC+z6Z9ewmDnUTMCg==" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+    <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    {{ clientData|json_script:"clientData" }}
+    <script>
+        // clientid from the session, need to look for better soluton to avoid XSS
+        // sessionData = {
+        //     'clientid':clientid,
+        //     'clientemail':email,
+        //     'selection':{'pictureid':count, 'pictureid':count}
+        // }
+        function askForClientID() {
+            var modalContent = `
+            <div class="modal fade" id="getClientID" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="getClientID" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <h5 class="modal-title" id="getClientIDTitle">Provide your Client ID</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <label for="modalClientID" class="col-form-label">Enter your identification :</label>
+                                <input type="text" class="form-control" id="modalClientID">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="ClientIDModalCancel">Cancel</button>
+                    <input type="submit" class="btn btn-primary" data-dismiss="modal" id="ClientIDModalSet" value="Set">
+                    </div>
+                </div>
+                </div>
+            </div>`
+
+            const modalSection = document.getElementById('modalSection');
+            modalSection.innerHTML = modalContent;
+
+        }
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        function clientLogout() {
+            fetch(`/api/clientlogout/`, {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': csrftoken},
+                    mode: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                })
+                .catch (error => {
+                    console.error(error);
+                });
+    
+            // clear all selections
+            if(clientData['selection']) {
+                clientData['selection'].forEach(selection => {                      
+                    if (document.getElementById(`pic_select_${selection['asset_id']}`)) {
+                        document.getElementById(`pic_select_${selection['asset_id']}`).checked = false;
+                        document.getElementById(`print_minus_${selection['asset_id']}`).setAttribute('disabled', '');
+                        document.getElementById(`print_count_${selection['asset_id']}`).value = '';
+                        document.getElementById(`print_count_${selection['asset_id']}`).setAttribute('disabled', '');
+                        document.getElementById(`print_plus_${selection['asset_id']}`).setAttribute('disabled', '');
+                    }
+                });
+            }
+
+            // clear clientData
+            //clientData = '{}'
+            document.getElementById('clientData').textContent = '{}'
+            clientData = JSON.parse(document.getElementById('clientData').textContent);
+
+            // replace logout button with login
+            document.getElementById('loginButton').innerHTML = `<a href="#" class="text-reset" id="clientLogin"><i class="bi bi-box-arrow-in-right"></i></a>`
+            document.getElementById('clientLogin').addEventListener('click', clientLogin)
+
+        }
+        function clientLogin() {
+            askForClientID();
+            var myModal = new bootstrap.Modal(document.getElementById('getClientID'), {});
+            myModal.show();
+            var myModalButtonSet = document.getElementById('ClientIDModalSet');
+            var myModalButtonCancel = document.getElementById('ClientIDModalCancel');
+
+            myModalButtonSet.addEventListener('click', function() {
+                    const clientid = document.querySelector('#modalClientID').value;
+                    if (clientid) {
+                        myModal.hide(); 
+                        // send data to server
+                        fetch(`/api/clientlogin/${clientid}/`, {
+                            method: 'POST',
+                            headers: {'X-CSRFToken': csrftoken},
+                            mode: 'same-origin'
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            //console.log(data)
+                            // loop through stored client selections and load selections, print count and comments
+                            // part 1) load selections, print count and comments
+                            if(data['clientData']['selection']) {
+                                data['clientData']['selection'].forEach(selection => {                      
+                                    if (document.getElementById(`pic_select_${selection['asset_id']}`)) {
+                                        document.getElementById(`pic_select_${selection['asset_id']}`).checked = true;
+                                        document.getElementById(`print_minus_${selection['asset_id']}`).removeAttribute('disabled');
+                                        document.getElementById(`print_count_${selection['asset_id']}`).value = selection['print_count'];
+                                        document.getElementById(`print_count_${selection['asset_id']}`).removeAttribute('disabled');
+                                        document.getElementById(`print_plus_${selection['asset_id']}`).removeAttribute('disabled');
+                                    }
+                                });
+                            }
+                            // replace login button with logout
+                            document.getElementById('loginButton').innerHTML = `<a href="#" class="text-reset" id="clientLogout"><i class="bi bi-box-arrow-right"></i></a>`
+                            document.getElementById('clientLogout').addEventListener('click', clientLogout)
+
+                            clientData = data['clientData']
+                        })
+                        .catch (error => {
+                            console.error(error);
+                        });    
+                    } else {
+                          console.log('Client id entered empty')
+                    }
+            });
+
+            myModalButtonCancel.addEventListener('click', function() {
+                myModal.hide();
+            });
+        }
+        const csrftoken = getCookie('csrftoken');
+        var clientData = JSON.parse(document.getElementById('clientData').textContent);
+        
+        // https://masonry.desandro.com/layout.html
+        var elem = document.querySelector('.row');
+            imagesLoaded( elem, function() {
+                var msnry = new Masonry( elem, {
+                // options
+                itemSelector: '.masonry',
+                percentPosition: true
+            });    
+        });        
+        var gallery = new SimpleLightbox('.photo_gallery a');
+        // Client Login handler
+        const clientLoginButton = document.getElementById('clientLogin')
+        if (clientLoginButton !== null) {
+            clientLoginButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                clientLogin();
+                return false;
+            });
+        }
+        // Client Logout handler
+        const clientLogoutButton = document.getElementById('clientLogout')
+        if (clientLogoutButton !== null) {
+            clientLogoutButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                clientLogout();
+                return false;
+            });
+        }
+        // picture select handler
+        const selectPictureButtons = document.querySelectorAll('[id^="pic_select_"]');
+        selectPictureButtons.forEach(element => {
+            element.addEventListener('change', function() {
+                
+                const assetId = element.id.replace("pic_select_","")
+                if (element.checked) {
+                    if (clientData['clientid']) {
+                        //console.log("clientdata: " + clientData['clientid'])
+                        // remove selection
+                        fetch(`/api/selectasset/${assetId}/`, {
+                            method: 'POST',
+                            headers: {'X-CSRFToken': csrftoken},
+                            mode: 'same-origin'
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data)
+                            clientData = data['clientData']
+                        })
+                        .catch (error => {
+                            console.error(error);
+                        });
+                    } else {
+                        // client data empty, we need ask client to login
+                        askForClientID();
+                        var myModal = new bootstrap.Modal(document.getElementById('getClientID'), {});
+                        myModal.show();
+                        var myModalButtonSet = document.getElementById('ClientIDModalSet');
+                        var myModalButtonCancel = document.getElementById('ClientIDModalCancel');
+
+                        myModalButtonSet.addEventListener('click', function() {
+                             const clientid = document.querySelector('#modalClientID').value;
+                             if (clientid) {
+                                myModal.hide(); 
+                                // send data to server
+                                fetch(`/api/clientlogin/${clientid}/`, {
+                                    method: 'POST',
+                                    headers: {'X-CSRFToken': csrftoken},
+                                    mode: 'same-origin'
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    //console.log(data)
+                                    // loop through stored client selections and 1) load selections, print count and comments and 2) if current selected item not in loaded list, send selection to backedn
+                                    // part 1) load selections, print count and comments
+                                    
+                                    if(data?.['clientData']?.['selection']) {
+                                        data['clientData']['selection'].forEach(selection => {
+                                            
+                                            if (selection['asset_id'] == assetId) {
+                                                document.getElementById(`print_count_${selection['asset_id']}`).value = selection['print_count'];
+                                            } else {
+                                            
+                                                if (document.getElementById(`pic_select_${selection['asset_id']}`)) {
+                                                    document.getElementById(`pic_select_${selection['asset_id']}`).checked = true;
+                                                    document.getElementById(`print_minus_${selection['asset_id']}`).removeAttribute('disabled');
+                                                    document.getElementById(`print_count_${selection['asset_id']}`).value = selection['print_count'];
+                                                    document.getElementById(`print_count_${selection['asset_id']}`).removeAttribute('disabled');
+                                                    document.getElementById(`print_plus_${selection['asset_id']}`).removeAttribute('disabled');
+                                                }
+                                            }    
+                                            
+                                        });
+                                    }
+                                    //part 2) if current selection is not in loaded list, send fetch to backend
+                                    if (! data?.['clientData']?.['selection'].some(e=> e.asset_id == assetId)) {
+                                        //console.log(`Element selected NOT in list,  ${assetId}`)
+                                        fetch(`/api/selectasset/${assetId}/`, {
+                                            method: 'POST',
+                                            headers: {'X-CSRFToken': csrftoken},
+                                            mode: 'same-origin'
+                                        })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            console.log(data)
+                                            clientData = data['clientData']
+                                        })
+                                        .catch (error => {
+                                            console.error(error);
+                                        });
+                                    }
+                                    // set the clientData variable
+                                    clientData = data['clientData']
+
+                                     // replace login button with logout
+                                    document.getElementById('loginButton').innerHTML = `<a href="#" class="text-reset" id="clientLogout"><i class="bi bi-box-arrow-right"></i></a>`
+                                    document.getElementById('clientLogout').addEventListener('click', clientLogout)
+                                    
+                                })
+                                .catch (error => {
+                                    console.error(error);
+                                });    
+                             }   else {
+                                       
+                                console.log('empty')
+                             }
+                        });
+
+                        myModalButtonCancel.addEventListener('click', function() {
+                            myModal.hide();
+                            element.checked = false;
+                            // disable picture toolbar elements and clear print value
+                            // console.log('selection ' + element.id + ' disabled')
+                            document.getElementById(`print_minus_${assetId}`).setAttribute('disabled', '');
+                            document.getElementById(`print_count_${assetId}`).value = '';
+                            document.getElementById(`print_count_${assetId}`).setAttribute('disabled', '');
+                            document.getElementById(`print_plus_${assetId}`).setAttribute('disabled', '');
+                        });
+
+                        
+                        
+                    }
+                    // enable picture toolbar elements and automatically set print value to 1
+                    // console.log('selection ' + element.id + ' enabled')
+                    document.getElementById(`print_minus_${assetId}`).removeAttribute('disabled');
+                    document.getElementById(`print_count_${assetId}`).removeAttribute('disabled');
+                    document.getElementById(`print_count_${assetId}`).value = '1';
+                    document.getElementById(`print_plus_${assetId}`).removeAttribute('disabled');
+                } else {
+                    console.log("element.checked false")
+                    // disable picture toolbar elements and clear print value
+                    // console.log('selection ' + element.id + ' disabled')
+                    document.getElementById(`print_minus_${assetId}`).setAttribute('disabled', '');
+                    document.getElementById(`print_count_${assetId}`).value = '';
+                    document.getElementById(`print_count_${assetId}`).setAttribute('disabled', '');
+                    document.getElementById(`print_plus_${assetId}`).setAttribute('disabled', '');
+
+                    fetch(`/api/selectasset/${assetId}/`, {
+                        method: 'POST',
+                        headers: {'X-CSRFToken': csrftoken},
+                        mode: 'same-origin'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data)
+                        clientData = data['clientData']
+                    })
+                    .catch (error => {
+                        console.error(error);
+                    });
+                }
+            });
+
+        });
+
+        // print minus count handler
+        const selectCountMinusButtons = document.querySelectorAll('[id^="print_minus_"]');
+        selectCountMinusButtons.forEach(element => {
+            element.addEventListener('click', function() {
+                const assetId = element.id.replace("print_minus_","")
+                // get the coresponding input element that holds value
+                const print_count = document.getElementById(`print_count_${assetId}`);
+                if (parseInt(print_count.value) > 0) {
+                    print_count.value--;
+                    // raise input value change event that will trigger sending data to backend
+                    print_count.dispatchEvent(new Event('change'));
+                    
+                }
+            });
+        });
+        // print plus count handler
+        const selectCountPlusButtons = document.querySelectorAll('[id^="print_plus_"]');
+        selectCountPlusButtons.forEach(element => {
+            element.addEventListener('click', function() {
+                const assetId = element.id.replace("print_plus_","")
+                // get the coresponding input element that holds value
+                const print_count = document.getElementById(`print_count_${assetId}`);
+                print_count.value++;
+                // raise input value change event that will trigger sending data to backend
+                print_count.dispatchEvent(new Event('change'));
+                
+            });
+        });
+        // manual input value handler to send data to server on value change
+        const selectCountInput = document.querySelectorAll('[id^="print_count_"]');
+        selectCountInput.forEach(element => {
+            element.addEventListener('change', function() {
+                const assetId = element.id.replace("print_count_","")
+                // TODO: send data to server
+                console.log('Asset id: ' + assetId + ', value changed to: ' + element.value)
+                fetch(`/api/setprintcount/${assetId}/${element.value}/`, {
+                        method: 'POST',
+                        headers: {'X-CSRFToken': csrftoken},
+                        mode: 'same-origin'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data)
+                        clientData = data['clientData']  
+                    })
+                    .catch (error => {
+                        console.error(error);
+                    });
+                
+            });
+        });
+
+    </script>
+  </body>
+</html>

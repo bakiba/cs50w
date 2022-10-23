@@ -270,17 +270,19 @@ def clientLogin(request, clientid):
             'clientid':client.identifier,
             'selection':list(selections.values('asset_id', 'print_count', 'comment'))
         }
-        request.session['clientData'] = clientData
-        return JsonResponse({"success": "Client login successfull", "clientData": clientData}) 
+        # request.session['clientData'] = clientData
+        # return JsonResponse({"success": "Client login successfull", "clientData": clientData}) 
 
     except Client.DoesNotExist:
         client = Client(identifier=clientid)
         client.save()
         clientData = {
-        'clientid':client.identifier
+        'clientid':client.identifier,
+        'selection':[]
         }
-        request.session['clientData'] = clientData
-        return JsonResponse({"success": "Client login successfull"})
+    
+    request.session['clientData'] = clientData
+    return JsonResponse({"success": "Client login successfull", "clientData": clientData})
 
 def toggleAssetSelection(request, assetid):
     if not request.session.get('gallery_password', False):
@@ -306,7 +308,7 @@ def toggleAssetSelection(request, assetid):
 
     request.session['clientData'] = clientData
 
-    return JsonResponse({"success": "Selection set"})
+    return JsonResponse({"success": "Selection set", "clientData": clientData})
 
 def setPrintCount(request, assetid, print_count):
     if not request.session.get('gallery_password', False):
@@ -326,7 +328,7 @@ def setPrintCount(request, assetid, print_count):
 
         request.session['clientData'] = clientData
         
-        return JsonResponse({"success": "Print count set"})
+        return JsonResponse({"success": "Print count set", "clientData": clientData})
     
     except Selection.DoesNotExist:
         return JsonResponse({"error": "Selection not found"}, status=404)
