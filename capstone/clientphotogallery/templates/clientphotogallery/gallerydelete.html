@@ -1,0 +1,20 @@
+{% extends "clientphotogallery/layout.html" %}
+{% load crispy_forms_tags %}
+
+{% block body %}
+<main>
+  <div class="container-fluid px-4">
+     <h1 class="mt-4">Delete Gallery</h1>
+     <div class="form-group">
+      <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <p>Are you sure you want to delete Gallery <strong>{{ object.title }}</strong>?</p>
+        <button type="submit" class="btn btn-success mb-3">Delete</button>
+        <a href="{{ view.get_success_url }}" class="btn btn-danger mb-3">Cancel</a>
+      </form>
+    </div>
+  </div>
+</main>
+
+{% endblock body %}

@@ -5,6 +5,10 @@
 <main>
   <div class="container-fluid px-4">
     <h1 class="mt-4">Edit Gallery</h1>  
+    <ol class="breadcrumb mb-4">
+      <li class="breadcrumb-item"><a href="{% url 'list' %}">Dashboard</a></li>
+      <li class="breadcrumb-item active">Edit Gallery</li>
+    </ol> 
     <div class="form-group">
         <form action="" method="post" enctype="multipart/form-data">
           {% csrf_token %}
@@ -17,12 +21,17 @@
           <div class="form-group col-md-6 mb-0">
             <label for="id_password" class="form-label">{{ form.password.label }}</label>
             <div class="input-group mb-3">
-              <input type="text" id="id_password" name="{{ form.password.name }}" class="text input form-control" value="{{ form.password.value}}" placeholder="Gallery password" aria-label="Gallery password" aria-describedby="button-addon2"> 
+              <input type="text" id="id_password" name="{{ form.password.name }}" class="text input form-control" value="{{ form.password.value}}" aria-label="Gallery password" aria-describedby="button-addon2"> 
               <button type="button" class="btn btn-outline-secondary" id="generateRandPw">Generate random</button>
             </div>
           </div>
           <div class="form-group col-md-6 mb-0">
-            {{ form.file_field|as_crispy_field }}
+            <div id="div_id_file_field" class="mb-3">
+              <label for="id_file_field" class="form-label">Upload additional files</label>
+              <div>
+                <input type="file" name="file_field" class="form-control" multiple="" id="id_file_field">
+              </div>
+            </div>
           </div>
           <div class="form-group col-md-6 mb-0">
             <div class="form-check form-check-inline">

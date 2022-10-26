@@ -63,14 +63,17 @@ class UserRegisterView(CreateView):
 
 class GalleryListVew(LoginRequiredMixin,ListView):
     login_url = '/dashboard/login/'
-    model=Gallery
     template_name='clientphotogallery/dashboard.html'
     context_object_name='galleries'
 
-    def get_queryset(self, **kwargs):
-        queryset = super().get_queryset(**kwargs)
-        queryset = queryset.annotate(count_selected=Count('assets__selections'))
+    def get_queryset(self):
+        queryset = Gallery.objects.filter(owner=self.request.user).annotate(count_selected=Count('assets__selections'))
         return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['selections'] = Selection.objects.filter(asset__gallery__owner=self.request.user).values('client__identifier', 'asset__file', 'asset__gallery__title', 'print_count', 'updated','comment')
+        return context
 
 class GalleryDetailedView(LoginRequiredMixin, UserIsOwner, DetailView):
     login_url = '/dashboard/login/'

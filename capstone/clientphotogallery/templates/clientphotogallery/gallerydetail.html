@@ -3,16 +3,64 @@
 {% block body %}
 <main>
     <div class="container-fluid px-4">
-        <h2>{{ gallery.title }}
+        <h1 class="mt-4">{{ gallery.title }}
         <a href="{% url 'edit' gallery.id %}?next={{ request.path|urlencode }}" class="text-decoration-none link-dark">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
                 <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
             </svg>
             </a>
-        </h2>
-        <h2>{{ gallery.password }}</h2>
+        </h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item"><a href="{% url 'list' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active">{{ gallery.title }}</li>
+        </ol>        
+        <!-- <div class="row">
+            <div class="col-xl-3 col-md-6"> -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Gallery details
+                    </div>
+                    <div class="card-body">
+                    <table class="table ">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Client URL</th>
+                                <th>Gallery Password</th>
+                                <th>Enabled/Archived</th>
+                                <th>Client selections</th>
+                                <th>Date Created</th>
+                            </tr>
+                            <tbody>
+                                <tr>
+                                    <td> {{ gallery.description }}</td>
+                                    <td> <a href="{% url 'clientgalleryview' gallery.id %}" target="_blank">Link</a></td>
+                                    <td> {{ gallery.password }}</td>
+                                    <td>{{ gallery.enabled }} / {{ gallery.archived }}</td>
+                                    <td> {{ gallery.gallery.count_selected }}</td>
+                                    <td> {{ gallery.created }}</td>
+                                </tr>
+                            </tbody>
+                        </thead>
+                    </table>
+                    </div>
+                </div>
+            <!-- </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Gallery password
+                    </div>
+                    <div class="card-body">
+                    <p>{{ gallery.password }}</p>
+                    </div>
+                </div>
+            </div>
+        </div> -->
         
-        <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div class="row row-cols-1 row-cols-md-3 g-4" id="masonryRow">
             {% for object in gallery.assets.all %}
             <div class="col">
                 <div class="card">
@@ -64,7 +112,8 @@
  <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
  <script>
     // https://masonry.desandro.com/layout.html
-    var elem = document.querySelector('.row');
+    //var elem = document.querySelector('.row-cols-1');
+    var elem = document.getElementById('masonryRow');
     imagesLoaded( elem, function() {
         console.log("loaded")
         var msnry = new Masonry( elem, {
