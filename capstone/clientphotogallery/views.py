@@ -7,6 +7,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth import authenticate, login, get_user_model
 from django.contrib.auth.views import LoginView
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
@@ -162,9 +163,10 @@ def is_valid_uuid(val):
         return True
     except ValueError:
         return False
-    
+
+@ensure_csrf_cookie
 def ClientLandingView(request):
-    
+    print("in ClientLandingView")
     if request.method == "POST":
         gallery_id  = request.POST.get('gallery_id',request.GET.get('gallery_id'))
         
@@ -180,8 +182,9 @@ def ClientLandingView(request):
     else:
         return render(request, "clientphotogallery/clientlanding.html")
 
+@ensure_csrf_cookie
 def ClientGalleryView(request, pk=None):
-    
+    print("in ClientGalleryView")
     if (not request.session.get('clientData', False)):
         clientData = {}
     else:
@@ -211,7 +214,9 @@ def ClientGalleryView(request, pk=None):
             return render(request, "clientphotogallery/clientlanding.html", { "message":"Gallery removed or not found" })
         
         if not gallery.password:
-            request.session['gallery_password']=gallery.password
+            #print("Gallery has no password")
+            # when gallery has no password, we need to set gallery_password session to some random string simulate client successfull login
+            request.session['gallery_password']="pRgYwI2t?9&vmB1"
             return render(request, "clientphotogallery/clientgalleryview.html", { "gallery":gallery, "clientData":clientData })
         else:
             
@@ -228,7 +233,7 @@ def ClientGalleryView(request, pk=None):
                 else:
                     # if password is correct? need here to refactor to consider different galeries user might have accessed
                     if gal_session == gallery.password:
-                        print("entered here")
+                        #print("entered here")
                         #sessionData = '{"clientid":"test"}'
                         return render(request, "clientphotogallery/clientgalleryview.html", { "gallery":gallery, "clientData":clientData }) 
                     # if password is not matching, ask to submit password
@@ -268,7 +273,7 @@ def clientLogout(request):
     return JsonResponse({"success": "Client logout successfull"})
 
 def clientLogin(request, clientid):
-    
+    print("in clientLogin")
     if not request.session.get('gallery_password', False):
         return render(request, "clientphotogallery/clientlanding.html", {"message":"You must have valid session"})
 
