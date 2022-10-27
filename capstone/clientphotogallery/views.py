@@ -81,6 +81,10 @@ class GalleryDetailedView(LoginRequiredMixin, UserIsOwner, DetailView):
     template_name='clientphotogallery/gallerydetail.html'
     context_object_name='gallery'
 
+    def get_queryset(self):
+        queryset = Gallery.objects.filter(owner=self.request.user).annotate(count_selected=Count('assets__selections'))
+        return queryset
+
 class GalleryCreateView(LoginRequiredMixin, CreateView):
     login_url = '/dashboard/login/'
     form_class = GalleryCreateForm
@@ -207,6 +211,7 @@ def ClientGalleryView(request, pk=None):
             return render(request, "clientphotogallery/clientlanding.html", { "message":"Gallery removed or not found" })
         
         if not gallery.password:
+            request.session['gallery_password']=gallery.password
             return render(request, "clientphotogallery/clientgalleryview.html", { "gallery":gallery, "clientData":clientData })
         else:
             
@@ -259,6 +264,7 @@ def ClientGalleryView(request, pk=None):
     
 def clientLogout(request):
     del request.session['clientData']
+    del request.session['gallery_password']
     return JsonResponse({"success": "Client logout successfull"})
 
 def clientLogin(request, clientid):
