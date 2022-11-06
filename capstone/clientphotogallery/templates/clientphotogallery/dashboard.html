@@ -76,14 +76,21 @@
                                     </a>
                                 </div>
                             </div>
-                            <div class="card-body">
-                                <p class="card-text">{{ gallery.description}}</p>
-                                <a href="{% url 'detail' gallery.id %}">Open</a>
-                                <a href="{% url 'edit' gallery.id %}">Edit</a>
-                                <p></p>
-                                <p>Number of selections: {{ gallery.count_selected }}</p>
-                                <p class="card-text"><small class="text-muted">Created {{ gallery.created}}</small></p>
-                            </div>   
+                            <div class="row g-0">
+                                <div class="col-md-4">
+                                    <img src="{{ gallery.assets.all.0.file.url }}" class="img-fluid rounded-start" alt="..." style="max-height: 174px;">
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="card-body">
+                                        <p class="card-text">{{ gallery.description}}</p>
+                                        <a href="{% url 'detail' gallery.id %}">Open</a>
+                                        <a href="{% url 'edit' gallery.id %}">Edit</a>
+                                        <p></p>
+                                        <p>Number of selections: {{ gallery.count_selected }}</p>
+                                        <p class="card-text"><small class="text-muted">Created {{ gallery.created}}</small></p>
+                                    </div>   
+                                </div>
+                            </div>
                         </div>
                     </div>
                     {% endfor %}
