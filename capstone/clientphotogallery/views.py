@@ -166,7 +166,6 @@ def is_valid_uuid(val):
 
 @ensure_csrf_cookie
 def ClientLandingView(request):
-    print("in ClientLandingView")
     if request.method == "POST":
         gallery_id  = request.POST.get('gallery_id',request.GET.get('gallery_id'))
         
@@ -184,7 +183,6 @@ def ClientLandingView(request):
 
 @ensure_csrf_cookie
 def ClientGalleryView(request, pk=None):
-    print("in ClientGalleryView")
     if (not request.session.get('clientData', False)):
         clientData = {}
     else:
@@ -281,7 +279,7 @@ def clientLogin(request, clientid):
         return render(request, "clientphotogallery/clientlanding.html", {"message":"You must have valid session"})
 
     try:
-        client = Client.objects.get(identifier=clientid)
+        client = Client.objects.get(identifier=clientid.lower())
         selections = Selection.objects.filter(client=client)
         clientData = {
             'clientid':client.identifier,
@@ -291,7 +289,7 @@ def clientLogin(request, clientid):
         # return JsonResponse({"success": "Client login successfull", "clientData": clientData}) 
 
     except Client.DoesNotExist:
-        client = Client(identifier=clientid)
+        client = Client(identifier=clientid.lower())
         client.save()
         clientData = {
         'clientid':client.identifier,
