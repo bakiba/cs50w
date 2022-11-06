@@ -269,11 +269,14 @@ def ClientGalleryView(request, pk=None):
     
 def clientLogout(request):
     del request.session['clientData']
-    del request.session['gallery_password']
+    # temporary leave gallery_password session so that login/logout button works on gallery untill issue7 is resolved
+    #del request.session['gallery_password']
     return JsonResponse({"success": "Client logout successfull"})
 
 def clientLogin(request, clientid):
-    print("in clientLogin")
+    # print("in clientLogin")
+    # for key, value in request.session.items():
+    #     print('{} => {}'.format(key, value))
     if not request.session.get('gallery_password', False):
         return render(request, "clientphotogallery/clientlanding.html", {"message":"You must have valid session"})
 

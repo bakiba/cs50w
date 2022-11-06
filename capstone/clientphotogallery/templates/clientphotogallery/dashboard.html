@@ -1,5 +1,6 @@
 {% extends "clientphotogallery/layout.html" %}
 {% load static %}
+{% load app_filters %}
 
 {% block body %}
     <main>
@@ -100,7 +101,6 @@
                                     <th>Gallery</th>
                                     <th>Client</th>
                                     <th>Asset</th>
-                                    <th>Selected</th>
                                     <th>Print Count</th>
                                     <th>Last Updated</th>
                                     <th>Comment</th>
@@ -111,7 +111,6 @@
                                     <th>Gallery</th>
                                     <th>Client</th>
                                     <th>Asset</th>
-                                    <th>Selected</th>
                                     <th>Print Count</th>
                                     <th>Last Updated</th>
                                     <th>Comment</th>
@@ -122,8 +121,7 @@
                                 <tr>
                                     <td>{{ selection.asset__gallery__title }}</td>
                                     <td>{{ selection.client__identifier }}</td>
-                                    <td>{{ selection.asset__file }}</td>
-                                    <td>selected</td>
+                                    <td>{{ selection.asset__file|filename }}</td>
                                     <td>{{ selection.print_count }}</td>
                                     <td>{{ selection.updated }}</td>
                                     <td>{{ selection.comment }}</td>

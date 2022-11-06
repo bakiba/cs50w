@@ -1,3 +1,4 @@
+import os
 from django import template
 
 register = template.Library()
@@ -15,3 +16,7 @@ def get_print_count(list, id):
         if item['asset_id'] == id:
             return item['print_count']
     return 1
+
+@register.filter
+def filename(value):
+    return os.path.basename(value)
