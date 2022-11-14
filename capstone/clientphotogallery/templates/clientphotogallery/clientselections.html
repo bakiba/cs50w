@@ -1,0 +1,274 @@
+{% extends "clientphotogallery/layout.html" %}
+{% load static %}
+{% load app_filters %}
+
+{% block body %}
+    <main>
+        <div class="container-fluid px-4">
+            <h1 class="mt-4">Client Selections</h1>
+            <ol class="breadcrumb mb-4">
+                <li class="breadcrumb-item"><a href="{% url 'list' %}">Dashboard</a></li>
+                <li class="breadcrumb-item active">Client Selections</li>
+            </ol>
+            <!-- <div class="row">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-primary text-white mb-4">
+                        <div class="card-body">Primary Card</div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <a class="small text-white stretched-link" href="#">View Details</a>
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-warning text-white mb-4">
+                        <div class="card-body">Warning Card</div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <a class="small text-white stretched-link" href="#">View Details</a>
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-success text-white mb-4">
+                        <div class="card-body">Success Card</div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <a class="small text-white stretched-link" href="#">View Details</a>
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-danger text-white mb-4">
+                        <div class="card-body">Danger Card</div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <a class="small text-white stretched-link" href="#">View Details</a>
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+            {% if galleries %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-table me-1"></i>
+                        Selections grouped by
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                              <button class="nav-link active" id="assets-tab" data-bs-toggle="tab" data-bs-target="#assets" type="button" role="tab" aria-controls="assets" aria-selected="true">Assets</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                              <button class="nav-link" id="prints-tab" data-bs-toggle="tab" data-bs-target="#prints" type="button" role="tab" aria-controls="prints" aria-selected="false">Prints</button>
+                            </li>
+                          </ul>
+                          <div class="tab-content" id="myTabContent">
+                            
+                            <div class="tab-pane fade show active mt-3" id="assets" role="tabpanel" aria-labelledby="assets-tab">
+                                <table id="datatablesAssets" class="table table-striped pt-1" style="width:100%">
+                                    <thead>
+                                        <tr>
+                                            <th>Gallery</th>
+                                            <th>Client</th>
+                                            <th>Assets</th>
+                                        </tr>
+                                    </thead>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Gallery</th>
+                                            <th>Client</th>
+                                            <th>Assets</th>
+                                        </tr>
+                                    </tfoot>
+
+                                    <tbody>
+                                        {% for item in selections|clientselectionsassets %}
+                                        <tr>
+                                            <td>{{ item.asset__gallery__title }}</td>
+                                            <td>{{ item.client__identifier }}</td>
+                                            <td>{{ item.asset__file }}</td>
+
+                                        </tr>
+                                        {% endfor %}
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="tab-pane fade mt-3" id="prints" role="tabpanel" aria-labelledby="prints-tab">
+                                <table id="datatablesPrints" class="table table-striped" style="width:100%">
+                                    <thead>
+                                        <tr>
+                                            <th>Gallery</th>
+                                            <th>Asset</th>
+                                            <th>Print Count</th>
+                                        </tr>
+                                    </thead>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Gallery</th>
+                                            <th>Asset</th>
+                                            <th>Print Count</th>
+                                        </tr>
+                                    </tfoot>
+
+                                    <tbody>
+                                        {% for item in selections|clientselectionsprints %}
+                                        <tr>
+                                            <td>{{ item.asset__gallery__title }}</td>
+                                            <td>{{ item.asset__file }}</td>
+                                            <td>{{ item.print_count }}</td>
+
+                                        </tr>
+                                        {% endfor %}
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                          </div>
+                  
+                  
+                                
+                  
+                  
+                    </div>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-table me-1"></i>
+                        All Selections
+                    </div>
+                    <div class="card-body">
+                        <table id="datatablesAllSelections" class="table table-striped" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Gallery</th>
+                                    <th>Client</th>
+                                    <th>Asset</th>
+                                    <th>Print Count</th>
+                                    <th>Last Updated</th>
+                                    <th>Comment</th>
+                                </tr>
+                            </thead>
+                            <tfoot>
+                                <tr>
+                                    <th>Gallery</th>
+                                    <th>Client</th>
+                                    <th>Asset</th>
+                                    <th>Print Count</th>
+                                    <th>Last Updated</th>
+                                    <th>Comment</th>
+                                </tr>
+                            </tfoot>
+                            <tbody>
+                                {% for selection in selections %}
+                                <tr>
+                                    <td>{{ selection.asset__gallery__title }}</td>
+                                    <td>{{ selection.client__identifier }}</td>
+                                    <td>{{ selection.asset__file|filenamenoext }}</td>
+                                    <td>{{ selection.print_count }}</td>
+                                    <td>{{ selection.updated }}</td>
+                                    <td>{{ selection.comment }}</td>
+                                </tr>
+                                {% endfor %}
+                                
+                            </tbody>
+                        </table>    
+                    </div>
+                </div>
+            {% else %}
+            <p> You have no galleries, go ahead and <a href="{% url 'create' %}">Create your first gallery</a></p>
+            {% endif %}
+        </div>
+    </main>
+{% endblock %}
+
+{% block script %}               
+    <!-- <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script> -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.13.1/js/dataTables.bootstrap5.min.js" crossorigin="anonymous"></script>
+    <!-- <script src="{% static 'clientphotogallery/dashboard/js/datatablesClientSelections.js' %}"></script> -->
+    <script>
+        $(document).ready(function () {
+            $('#datatablesAllSelections').DataTable({
+                initComplete: function () {
+                    this.api()
+                        .columns([0,1,2])
+                        .every(function () {
+                            var column = this;
+                            var select = $('<select><option value=""></option></select>')
+                                .appendTo($(column.footer()).empty())
+                                .on('change', function () {
+                                    var val = $.fn.dataTable.util.escapeRegex($(this).val());
+        
+                                    column.search(val ? '^' + val + '$' : '', true, false).draw();
+                                });
+        
+                            column
+                                .data()
+                                .unique()
+                                .sort()
+                                .each(function (d, j) {
+                                    select.append('<option value="' + d + '">' + d + '</option>');
+                                });
+                        });
+                },
+            });
+            $('#datatablesAssets').DataTable({
+                paging: false,
+                sDom: 'lrtip',
+                info: false,
+                initComplete: function () {
+                    this.api()
+                        .columns([0,1])
+                        .every(function () {
+                            var column = this;
+                            var select = $('<select><option value=""></option></select>')
+                                .appendTo($(column.footer()).empty())
+                                .on('change', function () {
+                                    var val = $.fn.dataTable.util.escapeRegex($(this).val());
+        
+                                    column.search(val ? '^' + val + '$' : '', true, false).draw();
+                                });
+        
+                            column
+                                .data()
+                                .unique()
+                                .sort()
+                                .each(function (d, j) {
+                                    select.append('<option value="' + d + '">' + d + '</option>');
+                                });
+                        });
+                },
+            });
+            $('#datatablesPrints').DataTable({
+                // paging: false,
+                sDom: 'lrtip',
+                // info: false,
+                initComplete: function () {
+                    this.api()
+                        .columns([0])
+                        .every(function () {
+                            var column = this;
+                            var select = $('<select><option value=""></option></select>')
+                                .appendTo($(column.footer()).empty())
+                                .on('change', function () {
+                                    var val = $.fn.dataTable.util.escapeRegex($(this).val());
+        
+                                    column.search(val ? '^' + val + '$' : '', true, false).draw();
+                                });
+        
+                            column
+                                .data()
+                                .unique()
+                                .sort()
+                                .each(function (d, j) {
+                                    select.append('<option value="' + d + '">' + d + '</option>');
+                                });
+                        });
+                },
+            });
+        });
+    </script>
+{% endblock %}
