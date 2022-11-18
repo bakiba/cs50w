@@ -6,9 +6,15 @@
     <main>
         <div class="container-fluid px-4">
             <h1 class="mt-4">Dashboard</h1>
-            <ol class="breadcrumb mb-4">
-                <li class="breadcrumb-item active">Dashboard</li>
-            </ol>
+            <div class="d-flex justify-content-between">
+                <ol class="breadcrumb mb-4">
+                    <li class="breadcrumb-item active">Dashboard</li>
+                </ol>
+                <div class="form-check form-switch">
+                    <span>Hide archived</span>
+                    <input class="form-check-input" type="checkbox" id="hidearchive">
+                  </div>
+            </div>
             <!-- <div class="row">
                 <div class="col-xl-3 col-md-6">
                     <div class="card bg-primary text-white mb-4">
@@ -49,12 +55,20 @@
             </div> -->
             {% if galleries %}
                 <div class="row">  
-                    {% for gallery in galleries %}
-                    <div class="col-xl-6">
+                {% for gallery in galleries %}
+                    {% if gallery.archived %}
+                        <div class="col-xl-6 archived">
+                    {% else %}
+                        <div class="col-xl-6">
+                    {% endif %}    
                         <div class="card mb-4">
                             <div class="card-header">
                                 <div class="float-start">
-                                    {{ gallery.title }}
+                                   {% if gallery.archived %}
+                                        {{ gallery.title }} (Archived)
+                                    {% else %}
+                                        {{ gallery.title }}
+                                    {% endif %}
                                 </div>
                                 <div class="float-end">
                                     
@@ -102,7 +116,7 @@
                         Client Selections
                     </div>
                     <div class="card-body">
-                        <table id="datatablesDashboard">
+                        <table id="datatablesDashboard" class="table table-striped" style="width:100%">
                             <thead>
                                 <tr>
                                     <th>Gallery</th>
@@ -125,14 +139,27 @@
                             </tfoot>
                             <tbody>
                                 {% for selection in selections %}
-                                <tr>
-                                    <td>{{ selection.asset__gallery__title }}</td>
-                                    <td>{{ selection.client__identifier }}</td>
-                                    <td>{{ selection.asset__file|filename }}</td>
-                                    <td>{{ selection.print_count }}</td>
-                                    <td>{{ selection.updated }}</td>
-                                    <td>{{ selection.comment }}</td>
-                                </tr>
+                                    {% if selection.asset__gallery__archived %}
+                                    
+                                        <tr>
+                                            <td>{{ selection.asset__gallery__title }} (Archived)</td>
+                                            <td>{{ selection.client__identifier }}</td>
+                                            <td>{{ selection.asset__file|filename }}</td>
+                                            <td>{{ selection.print_count }}</td>
+                                            <td>{{ selection.updated }}</td>
+                                            <td>{{ selection.comment }}</td>
+                                        </tr>
+                                    
+                                    {% else %}
+                                    <tr>
+                                        <td>{{ selection.asset__gallery__title }}</td>
+                                        <td>{{ selection.client__identifier }}</td>
+                                        <td>{{ selection.asset__file|filename }}</td>
+                                        <td>{{ selection.print_count }}</td>
+                                        <td>{{ selection.updated }}</td>
+                                        <td>{{ selection.comment }}</td>
+                                    </tr>
+                                    {% endif %}
                                 {% endfor %}
                                 
                             </tbody>
@@ -147,6 +174,47 @@
 {% endblock %}
 
 {% block script %}               
-    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
-    <script src="{% static 'clientphotogallery/dashboard/js/datatablesDashboard.js' %}"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
+    <script src="{% static 'clientphotogallery/dashboard/js/datatablesDashboard.js' %}"></script> -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.13.1/js/dataTables.bootstrap5.min.js" crossorigin="anonymous"></script>
+    <script>
+        const toggleArchive = document.getElementById('hidearchive')
+        const elementstohide = document.querySelectorAll('.archived')
+        $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+            var hideArchive = toggleArchive.checked
+
+            if (hideArchive && data[0].match(/archive/i)) {
+                return false
+            }
+            return true
+
+        });
+        
+        var table = $('#datatablesDashboard').DataTable();
+        
+        toggleArchive.addEventListener('change', function(){
+            if (this.checked) {
+                elementstohide.forEach(element => {                    
+                    if (element.style.display = 'block') {
+                        element.style.display = 'none';
+                        table.draw();
+                    }
+                    
+                });
+            } else {
+                elementstohide.forEach(element => {
+                    if (element.style.display = 'none') {
+                        element.style.display = 'block';
+                        table.draw();
+                    }
+                });
+
+            }
+        });
+        // hide the rows for archived galeries
+        
+        
+    </script>
 {% endblock %}
