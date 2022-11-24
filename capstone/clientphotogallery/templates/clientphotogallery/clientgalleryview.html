@@ -1,4 +1,5 @@
 {% load app_filters %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -6,7 +7,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Client Photo Gallery</title>
+    <script src="https://use.fontawesome.com/releases/v6.1.0/js/all.js" crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <!-- <link href="{% static 'clientphotogallery/landing/css/styles.css' %}" rel="stylesheet" /> -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/simplelightbox/2.7.0/simple-lightbox.css" integrity="sha512-8WAX0xL/cHZ38RXoX2gtuqkAwmDVAzGwoFVmHvn46IDHGWOjTHx0vcl9OapNrfOzpFtql0SNkv+0y0b5Fm8ZkA==" crossorigin="anonymous" />
     <style>
@@ -18,26 +21,58 @@
         font-size: 12px;
         line-height: 1.5;
     }
+    .masonry,
+    .grid-sizer {
+        width: 33.33%;
+    }
     </style>
 </head>
-  <body>
-    <main class="container py-5">
-        <div class="btn-toolbar justify-content-between">
-        <h1>{{ gallery.title }}</h1>
-        {% if clientData %}
-            <!-- logout -->
-            <h2 class="align-self-center" id="loginButton"><a href="#" class="text-reset" id="clientLogout"><i class="bi bi-box-arrow-right"></i></a></h2>    
-        {% else %}
-            <!-- login -->
-            <h2 class="align-self-center" id="loginButton"><a href="#" class="text-reset" id="clientLogin"><i class="bi bi-box-arrow-in-right"></i></a></h2>    
-        {% endif %}
+  <body id="page-top">
+    
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top bg-light pb-0" id="mainNav">
+            <div class="container-fluid px-4 px-lg-5">
+            <!-- <a class="navbar-brand" href="#page-top">{{ gallery.title }}</a> -->
+            <h1 class="display-6">{{ gallery.title }}</h1>
+            <span class="navbar-text align-self-end">by {{ gallery.owner }}</span>
+            
+            <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                Menu
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ms-auto">
+                    {% if clientData %}
+                    <li class="nav-item " id="onlySelected">
+                        <a class="nav-link">
+                            <div class="form-check form-switch form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="switchOnlySelected">
+                                <label class="form-check-label" for="switchOnlySelected">Show only selected</label>
+                            </div>
+                        </a>
+                    </li>  
+                    <li class="nav-item " id="hideSelected">
+                        <a class="nav-link">
+                            <div class="form-check form-switch form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="switchHideSelected">
+                                <label class="form-check-label" for="switchHideSelected">Hide selected</label>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="nav-item" id="loginButton"><a class="nav-link" href="#" id="clientLogout">Logout (<span class="text-black-50">{{ clientData.clientid }}</span>)</a></li>
+                    {% else %}
+                    <li class="nav-item " id="onlySelected"></li>
+                    <li class="nav-item " id="hideSelected"></li>
+                    <li class="nav-item" id="loginButton"><a class="nav-link" href="#" id="clientLogin">Login</a></li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
-        <!-- <h5>{{ clientData.selection }}</h5> -->
-        <!-- {% for key in clientData.selection %}
-        <p>{{ key.asset_id }}</p>
-        {% endfor %} -->
-        <section class="photo_gallery">
-            <div class="row">
+    </nav>
+    
+    <section class="photo_gallery">
+        <div class="container-fluid">
+                <div class="row">
+                <div class="grid-sizer"></div>
             {% for object in gallery.assets.all %}               
                 <div class="masonry col-lg-4 col-md-4 col-12" >
                     <div class="text-center mt-2">
@@ -82,30 +117,14 @@
                 </div>
             {% endfor %}
             </div>
-        </section>
-    </main>
+        </div>
+    </section>
     <section id="modalSection"></section>
-    <!-- <div class="modal fade" id="getClientID" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="getClientID" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h5 class="modal-title" id="getClientIDTitle">Modal title</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-            Hello Modal!
-            </div>
-            <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Understood</button>
-            </div>
-        </div>
-        </div>
-    </div> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/simplelightbox/2.7.0/simple-lightbox.min.js" integrity="sha512-ZajFBgnksNp8Rj+AbmYe8ueOu45HiSjtf3QpqnRbHlq719m6VK0FkbYIqQ8wEnlVuJ1i9pC+z6Z9ewmDnUTMCg==" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
     <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <!-- <script src="{% static 'clientphotogallery/landing/js/scripts.js' %}"></script> -->
     {{ clientData|json_script:"clientData" }}
     <script>
         // clientid from the session, need to look for better soluton to avoid XSS
@@ -120,7 +139,7 @@
                 <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                    <h5 class="modal-title" id="getClientIDTitle">Provide your Client ID</h5>
+                    <h5 class="modal-title" id="getClientIDTitle">Save your selections</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -130,6 +149,7 @@
                                 <input type="text" class="form-control" id="modalClientID">
                             </div>
                         </form>
+                        <p class="text-muted" style="font-size:.85rem">We need some identification to save your selections. You can use your email or some other unique ID to save your selections.</p>
                     </div>
                     <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" id="ClientIDModalCancel">Cancel</button>
@@ -185,16 +205,97 @@
                     }
                 });
             }
-
             // clear clientData
             //clientData = '{}'
             document.getElementById('clientData').textContent = '{}'
             clientData = JSON.parse(document.getElementById('clientData').textContent);
 
             // replace logout button with login
-            document.getElementById('loginButton').innerHTML = `<a href="#" class="text-reset" id="clientLogin"><i class="bi bi-box-arrow-in-right"></i></a>`
+            // document.getElementById('loginButton').innerHTML = `<h2><a href="#" class="text-reset" id="clientLogin"><i class="bi bi-box-arrow-in-right"></i></a></h2>`
+            document.getElementById('loginButton').innerHTML = `<a class="nav-link" href="#" id="clientLogin">Login</a>`
             document.getElementById('clientLogin').addEventListener('click', clientLogin)
 
+            // swith off gallery selectors before logout
+            if (document.getElementById('switchHideSelected').checked) {
+                    document.getElementById('switchHideSelected').click()
+            }
+            if (document.getElementById('switchOnlySelected').checked) {
+                    document.getElementById('switchOnlySelected').click()
+            }
+            var msnry = Masonry.data('.row')
+            msnry.layout()
+            //hide gallery selectors
+            document.getElementById('onlySelected').innerHTML = ``
+            document.getElementById('hideSelected').innerHTML = ``
+
+        }
+        function hideSelected() {
+            if (this.checked) {
+                console.log("hide selected on")
+                // we can't have both show and hide on at the same time
+                if (document.getElementById('switchOnlySelected').checked) {
+                    document.getElementById('switchOnlySelected').click()
+                }
+                // find all selected assets and hide them
+                const allCards = document.querySelectorAll('.masonry')
+                allCards.forEach(element => {
+                    const card = element.querySelector('[id^="pic_select_"]')
+                    if (card.checked) {
+                        //console.log(card.id + " is selected")
+                        element.style.display = 'none'
+                    } 
+                })
+            } else {
+                console.log("hide selected off")
+                // find all selected elements and unhide them if hidden
+                const allCards = document.querySelectorAll('.masonry')
+                allCards.forEach(element => {
+                    const card = element.querySelector('[id^="pic_select_"]')
+                    if (card.checked && element.style.display == 'none') {
+                        //console.log(card.id + " is selected")
+                        element.style.display = 'block'
+                    } 
+                })
+            }
+            var msnry = Masonry.data('.row')
+            msnry.layout()
+        }
+        function showOnlySelected(){
+            if (this.checked) {
+                console.log("show only on")
+                // we can't have both show and hide on at the same time
+                if (document.getElementById('switchHideSelected').checked) {
+                    document.getElementById('switchHideSelected').click()
+                }
+                // find all selected assets and hide them
+                const allCards = document.querySelectorAll('.masonry')
+                allCards.forEach(element => {
+                    const card = element.querySelector('[id^="pic_select_"]')
+                    if (card.checked) {
+                        //console.log(card.id + " is selected")
+                        element.style.display = 'block'
+                    } else {
+                        element.style.display = 'none'
+                    }
+                })
+                var msnry = Masonry.data('.row')
+                msnry.reloadItems()
+                msnry.layout()
+            } else {
+                console.log("show only off")
+                const allCards = document.querySelectorAll('.masonry')
+                allCards.forEach(element => {
+                    const card = element.querySelector('[id^="pic_select_"]')
+                    if (!card.checked && element.style.display == 'none') {
+                        //console.log(card.id + " is selected")
+                        element.style.display = 'block'
+                    } 
+                })
+                var msnry = Masonry.data('.row')
+                msnry.reloadItems()
+                msnry.layout()
+            }
+            
         }
         function clientLogin() {
             askForClientID();
@@ -230,8 +331,25 @@
                                 });
                             }
                             // replace login button with logout
-                            document.getElementById('loginButton').innerHTML = `<a href="#" class="text-reset" id="clientLogout"><i class="bi bi-box-arrow-right"></i></a>`
+                            // document.getElementById('loginButton').innerHTML = `<h2><a href="#" class="text-reset" id="clientLogout"><i class="bi bi-box-arrow-right"></i></a></h2>`
+                            document.getElementById('loginButton').innerHTML = `<a class="nav-link" href="#" id="clientLogout">Logout (${clientid})</a>`
                             document.getElementById('clientLogout').addEventListener('click', clientLogout)
+                            
+                            //show gallery selectors and add event listener
+                            document.getElementById('onlySelected').innerHTML = `<a class="nav-link">
+                            <div class="form-check form-switch form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="switchOnlySelected">
+                                <label class="form-check-label" for="switchOnlySelected">Show only selected</label>
+                            </div>
+                            </a>`
+                            document.getElementById('switchOnlySelected').addEventListener('change', showOnlySelected)
+                            document.getElementById('hideSelected').innerHTML = `<a class="nav-link">
+                            <div class="form-check form-switch form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="switchHideSelected">
+                                <label class="form-check-label" for="switchHideSelected">Hide selected</label>
+                            </div>
+                            </a>`
+                            document.getElementById('switchHideSelected').addEventListener('change', hideSelected)
 
                             clientData = data['clientData']
                         })
@@ -252,11 +370,13 @@
         
         // https://masonry.desandro.com/layout.html
         var elem = document.querySelector('.row');
-            imagesLoaded( elem, function() {
-                var msnry = new Masonry( elem, {
-                // options
-                itemSelector: '.masonry',
-                percentPosition: true
+        imagesLoaded( elem, function() {
+            var msnry = new Masonry( elem, {
+            // options
+            itemSelector: '.masonry',
+            isAnimated: true,
+            percentPosition: true,
+            columnWidth: '.grid-sizer'
             });    
         });        
         var gallery = new SimpleLightbox('.photo_gallery a');
@@ -278,6 +398,17 @@
                 return false;
             });
         }
+        // gallery selector handlers
+        const showOnlySelectedButton = document.getElementById('switchOnlySelected')
+        const hideSelectedButton = document.getElementById('switchHideSelected')
+        if (showOnlySelectedButton !== null) {
+            showOnlySelectedButton.addEventListener('change', showOnlySelected) 
+        }
+        
+        if (hideSelectedButton !== null) {
+            hideSelectedButton.addEventListener('change', hideSelected) 
+        }
+
         // picture select handler
         const selectPictureButtons = document.querySelectorAll('[id^="pic_select_"]');
         selectPictureButtons.forEach(element => {
@@ -363,9 +494,26 @@
                                     // set the clientData variable
                                     clientData = data['clientData']
 
-                                     // replace login button with logout
-                                    document.getElementById('loginButton').innerHTML = `<a href="#" class="text-reset" id="clientLogout"><i class="bi bi-box-arrow-right"></i></a>`
+                                    // replace login button with logout
+                                    // document.getElementById('loginButton').innerHTML = `<h2><a href="#" class="text-reset" id="clientLogout"><i class="bi bi-box-arrow-right"></i></a></h2>`
+                                    document.getElementById('loginButton').innerHTML = `<a class="nav-link" href="#" id="clientLogout">Logout (${clientid})</a>`
                                     document.getElementById('clientLogout').addEventListener('click', clientLogout)
+                                    
+                                    //show gallery selectors and add event listener
+                                    document.getElementById('onlySelected').innerHTML = `<a class="nav-link">
+                                    <div class="form-check form-switch form-check-inline">
+                                        <input class="form-check-input" type="checkbox" id="switchOnlySelected">
+                                        <label class="form-check-label" for="switchOnlySelected">Show only selected</label>
+                                    </div>
+                                    </a>`
+                                    document.getElementById('switchOnlySelected').addEventListener('change', showOnlySelected)
+                                    document.getElementById('hideSelected').innerHTML = `<a class="nav-link">
+                                    <div class="form-check form-switch form-check-inline">
+                                        <input class="form-check-input" type="checkbox" id="switchHideSelected">
+                                        <label class="form-check-label" for="switchHideSelected">Hide selected</label>
+                                    </div>
+                                    </a>`
+                                    document.getElementById('switchHideSelected').addEventListener('change', hideSelected)
                                     
                                 })
                                 .catch (error => {
