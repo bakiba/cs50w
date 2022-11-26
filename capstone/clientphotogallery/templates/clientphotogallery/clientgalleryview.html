@@ -21,22 +21,38 @@
         font-size: 12px;
         line-height: 1.5;
     }
-    .masonry,
-    .grid-sizer {
-        width: 33.33%;
+  
+    @media screen and (max-width: 595px) {
+        .masonry,
+        .grid-sizer {
+            width: 100%;
+        }
     }
+  
+    @media screen and (min-width: 768px) {
+        .masonry,
+        .grid-sizer {
+            width: 50%;
+        }
+    }
+
+    @media screen and (min-width: 889px) {
+        .masonry,
+        .grid-sizer {
+            width: 33.333%;
+        }
+    }
+
     </style>
 </head>
   <body id="page-top">
-    
     <nav class="navbar navbar-expand-lg navbar-light sticky-top bg-light pb-0" id="mainNav">
             <div class="container-fluid px-4 px-lg-5">
-            <!-- <a class="navbar-brand" href="#page-top">{{ gallery.title }}</a> -->
-            <h1 class="display-6">{{ gallery.title }}</h1>
-            <span class="navbar-text align-self-end">by {{ gallery.owner }}</span>
-            
-            <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-                Menu
+            <div class="d-flex flex-column align-items-start">
+                <h1 class="display-6 mb-0">{{ gallery.title }}</h1>
+                <div class="navbar-text pt-0">by {{ gallery.owner }}</div>
+            </div>
+            <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"> 
                 <i class="fas fa-bars"></i>
             </button>
             <div class="collapse navbar-collapse" id="navbarResponsive">
@@ -71,14 +87,12 @@
     
     <section class="photo_gallery">
         <div class="container-fluid">
-                <div class="row">
+                <div class="row row-cols-1 row-cols-md-3 g-4" id="masonryRow">
                 <div class="grid-sizer"></div>
             {% for object in gallery.assets.all %}               
                 <div class="masonry col-lg-4 col-md-4 col-12" >
                     <div class="text-center mt-2">
                         <a href="{{object.file.url}}"><img src="{{object.file.url}}" class="img-thumbnail" alt="..."/></a>
-                        <!-- <p>{{ object.id }}</p>     -->
-                        <!-- <div class="row justify-content-between"> -->
                         <div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
                             <div class="col">
                                 <div class="form-check form-switch text-start">
@@ -127,12 +141,6 @@
     <!-- <script src="{% static 'clientphotogallery/landing/js/scripts.js' %}"></script> -->
     {{ clientData|json_script:"clientData" }}
     <script>
-        // clientid from the session, need to look for better soluton to avoid XSS
-        // sessionData = {
-        //     'clientid':clientid,
-        //     'clientemail':email,
-        //     'selection':{'pictureid':count, 'pictureid':count}
-        // }
         function askForClientID() {
             var modalContent = `
             <div class="modal fade" id="getClientID" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="getClientID" aria-hidden="true">
@@ -187,7 +195,7 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data)
+                    //console.log(data)
                 })
                 .catch (error => {
                     console.error(error);
@@ -211,18 +219,20 @@
             clientData = JSON.parse(document.getElementById('clientData').textContent);
 
             // replace logout button with login
-            // document.getElementById('loginButton').innerHTML = `<h2><a href="#" class="text-reset" id="clientLogin"><i class="bi bi-box-arrow-in-right"></i></a></h2>`
             document.getElementById('loginButton').innerHTML = `<a class="nav-link" href="#" id="clientLogin">Login</a>`
             document.getElementById('clientLogin').addEventListener('click', clientLogin)
 
-            // swith off gallery selectors before logout
-            if (document.getElementById('switchHideSelected').checked) {
-                    document.getElementById('switchHideSelected').click()
-            }
-            if (document.getElementById('switchOnlySelected').checked) {
-                    document.getElementById('switchOnlySelected').click()
-            }
-            var msnry = Masonry.data('.row')
+            // unhide all assets hidden by gallery selectors
+            const allCards = document.querySelectorAll('.masonry')
+            allCards.forEach(element => {
+                const card = element.querySelector('[id^="pic_select_"]')
+                if (element.style.display == 'none') {
+                    element.style.display = 'block'
+                } 
+            })
+            
+            var grid = document.getElementById('masonryRow')
+            var msnry = Masonry.data(grid)
             msnry.layout()
             //hide gallery selectors
             document.getElementById('onlySelected').innerHTML = ``
@@ -230,71 +240,92 @@
 
         }
         function hideSelected() {
-            if (this.checked) {
-                console.log("hide selected on")
+            const onlySelected=document.getElementById('switchOnlySelected')
+            const hideSelected=this
+            if (hideSelected.checked) {
                 // we can't have both show and hide on at the same time
-                if (document.getElementById('switchOnlySelected').checked) {
-                    document.getElementById('switchOnlySelected').click()
+                if (onlySelected.checked) {
+                    onlySelected.click()
                 }
                 // find all selected assets and hide them
                 const allCards = document.querySelectorAll('.masonry')
                 allCards.forEach(element => {
                     const card = element.querySelector('[id^="pic_select_"]')
                     if (card.checked) {
-                        //console.log(card.id + " is selected")
                         element.style.display = 'none'
                     } 
                 })
             } else {
-                console.log("hide selected off")
-                // find all selected elements and unhide them if hidden
+                // hideSelected is switched off
                 const allCards = document.querySelectorAll('.masonry')
                 allCards.forEach(element => {
                     const card = element.querySelector('[id^="pic_select_"]')
                     if (card.checked && element.style.display == 'none') {
-                        //console.log(card.id + " is selected")
                         element.style.display = 'block'
                     } 
                 })
             }
-            var msnry = Masonry.data('.row')
+            fetch(`/api/setclientconf/${clientData['clientid']}/?onlySelected=${onlySelected.checked}&hideSelected=${hideSelected.checked}`, {
+                method: 'GET',
+                headers: {'X-CSRFToken': csrftoken},
+                mode: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                //console.log(data)
+                clientData = data['clientData']
+            })
+            .catch (error => {
+                console.error(error);
+            });
+            var grid = document.getElementById('masonryRow')
+            var msnry = Masonry.data(grid)
             msnry.layout()
         }
         function showOnlySelected(){
-            if (this.checked) {
-                console.log("show only on")
+            const onlySelected=this
+            const hideSelected=document.getElementById('switchHideSelected')
+            if (onlySelected.checked) {
                 // we can't have both show and hide on at the same time
-                if (document.getElementById('switchHideSelected').checked) {
-                    document.getElementById('switchHideSelected').click()
+                if (hideSelected.checked) {
+                    hideSelected.click()
                 }
                 // find all selected assets and hide them
                 const allCards = document.querySelectorAll('.masonry')
                 allCards.forEach(element => {
                     const card = element.querySelector('[id^="pic_select_"]')
                     if (card.checked) {
-                        //console.log(card.id + " is selected")
                         element.style.display = 'block'
                     } else {
                         element.style.display = 'none'
                     }
                 })
-                var msnry = Masonry.data('.row')
-                msnry.reloadItems()
-                msnry.layout()
             } else {
-                console.log("show only off")
+                // onlySelected is switched off
                 const allCards = document.querySelectorAll('.masonry')
                 allCards.forEach(element => {
                     const card = element.querySelector('[id^="pic_select_"]')
                     if (!card.checked && element.style.display == 'none') {
-                        //console.log(card.id + " is selected")
                         element.style.display = 'block'
                     } 
                 })
-                var msnry = Masonry.data('.row')
-                msnry.reloadItems()
-                msnry.layout()
             }
+            fetch(`/api/setclientconf/${clientData['clientid']}/?onlySelected=${onlySelected.checked}&hideSelected=${hideSelected.checked}`, {
+                method: 'GET',
+                headers: {'X-CSRFToken': csrftoken},
+                mode: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                //console.log(data)
+                clientData = data['clientData']
+            })
+            .catch (error => {
+                console.error(error);
+            });
+            var grid = document.getElementById('masonryRow')
+            var msnry = Masonry.data(grid)
+            msnry.layout()
             
         }
         function clientLogin() {
@@ -316,7 +347,6 @@
                         })
                         .then(response => response.json())
                         .then(data => {
-                            //console.log(data)
                             // loop through stored client selections and load selections, print count and comments
                             // part 1) load selections, print count and comments
                             if(data['clientData']['selection']) {
@@ -352,6 +382,39 @@
                             document.getElementById('switchHideSelected').addEventListener('change', hideSelected)
 
                             clientData = data['clientData']
+                            
+                            // load gallery selectors from config
+                            const showOnlySelectedButton = document.getElementById('switchOnlySelected')
+                            const hideSelectedButton = document.getElementById('switchHideSelected')
+                            // if showOnlySelected was turned on
+                            if (clientData['config'][0]['onlySelected']) {
+                                showOnlySelectedButton.checked = true
+                                // find all selected assets and hide them
+                                const allCards = document.querySelectorAll('.masonry')
+                                allCards.forEach(element => {
+                                    const card = element.querySelector('[id^="pic_select_"]')
+                                    if (card.checked) {
+                                        element.style.display = 'block'
+                                    } else {
+                                        element.style.display = 'none'
+                                    }
+                                })
+                            }
+                            // if hideSelected was turned on
+                            if (clientData['config'][0]['hideSelected']) {
+                                hideSelectedButton.checked = true
+                                // find all selected assets and hide them
+                                const allCards = document.querySelectorAll('.masonry')
+                                allCards.forEach(element => {
+                                    const card = element.querySelector('[id^="pic_select_"]')
+                                    if (card.checked) {
+                                        element.style.display = 'none'
+                                    } 
+                                })
+                            }
+                            var grid = document.getElementById('masonryRow')
+                            var msnry = Masonry.data(grid)
+                            msnry.layout()
                         })
                         .catch (error => {
                             console.error(error);
@@ -362,14 +425,14 @@
             });
 
             myModalButtonCancel.addEventListener('click', function() {
-                myModal.hide();
+            myModal.hide();
             });
         }
         const csrftoken = getCookie('csrftoken');
         var clientData = JSON.parse(document.getElementById('clientData').textContent);
         
         // https://masonry.desandro.com/layout.html
-        var elem = document.querySelector('.row');
+        var elem = document.getElementById('masonryRow');
         imagesLoaded( elem, function() {
             var msnry = new Masonry( elem, {
             // options
@@ -403,10 +466,36 @@
         const hideSelectedButton = document.getElementById('switchHideSelected')
         if (showOnlySelectedButton !== null) {
             showOnlySelectedButton.addEventListener('change', showOnlySelected) 
+            // if showOnlySelected was turned on
+            if (clientData['config'][0]['onlySelected']) {
+                showOnlySelectedButton.checked = true
+                // find all selected assets and hide them
+                const allCards = document.querySelectorAll('.masonry')
+                allCards.forEach(element => {
+                    const card = element.querySelector('[id^="pic_select_"]')
+                    if (card.checked) {
+                        element.style.display = 'block'
+                    } else {
+                        element.style.display = 'none'
+                    }
+                })
+            }
         }
         
         if (hideSelectedButton !== null) {
             hideSelectedButton.addEventListener('change', hideSelected) 
+            // if hideSelected was turned on
+            if (clientData['config'][0]['hideSelected']) {
+                hideSelectedButton.checked = true
+                // find all selected assets and hide them
+                const allCards = document.querySelectorAll('.masonry')
+                allCards.forEach(element => {
+                    const card = element.querySelector('[id^="pic_select_"]')
+                    if (card.checked) {
+                        element.style.display = 'none'
+                    } 
+                })
+            }
         }
 
         // picture select handler
@@ -417,7 +506,6 @@
                 const assetId = element.id.replace("pic_select_","")
                 if (element.checked) {
                     if (clientData['clientid']) {
-                        //console.log("clientdata: " + clientData['clientid'])
                         // remove selection
                         fetch(`/api/selectasset/${assetId}/`, {
                             method: 'POST',
@@ -426,7 +514,7 @@
                         })
                         .then(response => response.json())
                         .then(data => {
-                            console.log(data)
+                            //console.log(data)
                             clientData = data['clientData']
                         })
                         .catch (error => {
@@ -452,8 +540,7 @@
                                 })
                                 .then(response => response.json())
                                 .then(data => {
-                                    //console.log(data)
-                                    // loop through stored client selections and 1) load selections, print count and comments and 2) if current selected item not in loaded list, send selection to backedn
+                                    // loop through stored client selections and 1) load selections, print count and comments and 2) if current selected item not in loaded list, send selection to backend
                                     // part 1) load selections, print count and comments
                                     
                                     if(data?.['clientData']?.['selection']) {
@@ -476,7 +563,6 @@
                                     }
                                     //part 2) if current selection is not in loaded list, send fetch to backend
                                     if (! data?.['clientData']?.['selection'].some(e=> e.asset_id == assetId)) {
-                                        //console.log(`Element selected NOT in list,  ${assetId}`)
                                         fetch(`/api/selectasset/${assetId}/`, {
                                             method: 'POST',
                                             headers: {'X-CSRFToken': csrftoken},
@@ -484,7 +570,7 @@
                                         })
                                         .then(response => response.json())
                                         .then(data => {
-                                            console.log(data)
+                                            //console.log(data)
                                             clientData = data['clientData']
                                         })
                                         .catch (error => {
@@ -495,7 +581,6 @@
                                     clientData = data['clientData']
 
                                     // replace login button with logout
-                                    // document.getElementById('loginButton').innerHTML = `<h2><a href="#" class="text-reset" id="clientLogout"><i class="bi bi-box-arrow-right"></i></a></h2>`
                                     document.getElementById('loginButton').innerHTML = `<a class="nav-link" href="#" id="clientLogout">Logout (${clientid})</a>`
                                     document.getElementById('clientLogout').addEventListener('click', clientLogout)
                                     
@@ -529,7 +614,6 @@
                             myModal.hide();
                             element.checked = false;
                             // disable picture toolbar elements and clear print value
-                            // console.log('selection ' + element.id + ' disabled')
                             document.getElementById(`print_minus_${assetId}`).setAttribute('disabled', '');
                             document.getElementById(`print_count_${assetId}`).value = '';
                             document.getElementById(`print_count_${assetId}`).setAttribute('disabled', '');
@@ -540,15 +624,12 @@
                         
                     }
                     // enable picture toolbar elements and automatically set print value to 1
-                    // console.log('selection ' + element.id + ' enabled')
                     document.getElementById(`print_minus_${assetId}`).removeAttribute('disabled');
                     document.getElementById(`print_count_${assetId}`).removeAttribute('disabled');
                     document.getElementById(`print_count_${assetId}`).value = '1';
                     document.getElementById(`print_plus_${assetId}`).removeAttribute('disabled');
                 } else {
-                    console.log("element.checked false")
                     // disable picture toolbar elements and clear print value
-                    // console.log('selection ' + element.id + ' disabled')
                     document.getElementById(`print_minus_${assetId}`).setAttribute('disabled', '');
                     document.getElementById(`print_count_${assetId}`).value = '';
                     document.getElementById(`print_count_${assetId}`).setAttribute('disabled', '');
@@ -561,7 +642,7 @@
                     })
                     .then(response => response.json())
                     .then(data => {
-                        console.log(data)
+                        // console.log(data)
                         clientData = data['clientData']
                     })
                     .catch (error => {
@@ -577,7 +658,7 @@
         selectCountMinusButtons.forEach(element => {
             element.addEventListener('click', function() {
                 const assetId = element.id.replace("print_minus_","")
-                // get the coresponding input element that holds value
+                // get the corresponding input element that holds value
                 const print_count = document.getElementById(`print_count_${assetId}`);
                 if (parseInt(print_count.value) > 0) {
                     print_count.value--;
@@ -592,7 +673,7 @@
         selectCountPlusButtons.forEach(element => {
             element.addEventListener('click', function() {
                 const assetId = element.id.replace("print_plus_","")
-                // get the coresponding input element that holds value
+                // get the corresponding input element that holds value
                 const print_count = document.getElementById(`print_count_${assetId}`);
                 print_count.value++;
                 // raise input value change event that will trigger sending data to backend
@@ -605,8 +686,6 @@
         selectCountInput.forEach(element => {
             element.addEventListener('change', function() {
                 const assetId = element.id.replace("print_count_","")
-                // TODO: send data to server
-                console.log('Asset id: ' + assetId + ', value changed to: ' + element.value)
                 fetch(`/api/setprintcount/${assetId}/${element.value}/`, {
                         method: 'POST',
                         headers: {'X-CSRFToken': csrftoken},
@@ -614,7 +693,7 @@
                     })
                     .then(response => response.json())
                     .then(data => {
-                        console.log(data)
+                        // console.log(data)
                         clientData = data['clientData']  
                     })
                     .catch (error => {

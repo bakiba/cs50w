@@ -17,6 +17,8 @@ class User(AbstractUser):
 class Client(models.Model):
     identifier = models.CharField(max_length=150, unique=True)
     email = models.EmailField(blank=True)
+    hideSelected = models.BooleanField(default=False)
+    onlySelected = models.BooleanField(default=False)
     
     def __str__(self):
         if self.email:

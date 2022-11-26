@@ -294,6 +294,7 @@ def clientLogin(request, clientid):
         selections = Selection.objects.filter(client=client)
         clientData = {
             'clientid':client.identifier,
+            'config': [{'hideSelected': client.hideSelected, 'onlySelected': client.onlySelected}],
             'selection':list(selections.values('asset_id', 'print_count', 'comment'))
         }
         # request.session['clientData'] = clientData
@@ -304,6 +305,7 @@ def clientLogin(request, clientid):
         client.save()
         clientData = {
         'clientid':client.identifier,
+        'config': [],
         'selection':[]
         }
     
@@ -358,3 +360,39 @@ def setPrintCount(request, assetid, print_count):
     
     except Selection.DoesNotExist:
         return JsonResponse({"error": "Selection not found"}, status=404)
+
+def setClientConf(request, clientid):
+    if not request.session.get('gallery_password', False):
+        return render(request, "clientphotogallery/clientlanding.html", {"message":"You must have valid session"})
+
+    if not request.session.get('clientData', False):
+        return render(request, "clientphotogallery/clientlanding.html", {"message":"You must have valid clientid"})
+
+    clientData = request.session.get('clientData', False)
+
+    hideSelected = request.GET.get('hideSelected')
+    onlySelected = request.GET.get('onlySelected')
+
+    # print(f"clientid={clientid}, hideSelected={hideSelected}")
+    # print(f"clientid={clientid}, onlySelected={onlySelected}")
+
+    try:
+        client = Client.objects.get(identifier=clientData['clientid'])
+        # print(f"client values before: hideSelected:{client.hideSelected}, onlySelected: {client.onlySelected}")
+        if (hideSelected != None):
+            client.hideSelected = True if hideSelected == 'true' else False
+        if (onlySelected != None):
+            client.onlySelected = True if onlySelected == 'true' else False
+        client.save()
+        client = Client.objects.filter(identifier=clientData['clientid'])
+        # print(f"client values after: hideSelected   :{client.values('hideSelected')}, onlySelected: {client.values('onlySelected')}")
+        clientData['config'] = list(client.values('onlySelected','hideSelected'))
+
+        request.session['clientData'] = clientData
+        return JsonResponse({"success": "Config set", "clientData": clientData})
+    except Client.DoesNotExist:
+        return JsonResponse({"error": "Client not found"}, status=404)
+
+    
+
+    

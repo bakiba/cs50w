@@ -21,6 +21,7 @@ from .views import (
     setPrintCount,
     clientLogin,
     clientLogout,
+    setClientConf,
 
 )
 
@@ -45,4 +46,6 @@ urlpatterns = [
     path('api/clientlogin/<str:clientid>/', clientLogin, name='clientlogin'),
     path('api/selectasset/<int:assetid>/', toggleAssetSelection, name='selectasset'),
     path('api/setprintcount/<int:assetid>/<int:print_count>/', setPrintCount, name='setprintcount'),
+    path('api/setclientconf/<str:clientid>/', setClientConf, name='setclientconf'),
+
 ]
