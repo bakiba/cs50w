@@ -9,7 +9,7 @@ from django.utils.deconstruct import deconstructible
 @keep_lazy_text
 def get_valid_filename(name):
     """
-    Modified get_valid_filename function as I need fil names unchanged. Only strip leading and trailing spaces.
+    Modified get_valid_filename function as I need file names unchanged. Only strip leading and trailing spaces.
     """
     s = str(name).strip()
     #s = re.sub(r"(?u)[^-'\s\w.]", "", s)
