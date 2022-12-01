@@ -3,9 +3,6 @@ from django.contrib.auth.views import LogoutView
 
 from .views import (
     index,
-    dashboard,
-    charts,
-    tables,
     GalleryCreateView,
     GalleryDetailedView,
     GalleryEditView,
@@ -27,9 +24,6 @@ from .views import (
 
 urlpatterns = [
     path('', index, name='index'),
-    #path('dashboard/index.html', dashboard, name='dashboard'),
-    #path('dashboard/charts.html', charts, name='charts'),
-    #path('dashboard/tables.html', tables, name='tables'),
     path('dashboard/list',GalleryListVew.as_view(),name='list'),
     path('gallery/<uuid:pk>/', GalleryDetailedView.as_view(), name='detail'),
     path('gallery/create/', GalleryCreateView.as_view(), name='create'),

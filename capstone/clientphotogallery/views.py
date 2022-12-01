@@ -15,23 +15,11 @@ from .models import User, Client, Gallery, Asset, Selection, upload_to_gallery
 from django.db.models import Count
 from django.db import transaction
 from .forms import GalleryCreateForm, GalleryEditForm, RegisterForm
-from django import forms
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 
 
 def index(request):
-    #return HttpResponse("Hello, world!")
     return render(request, "clientphotogallery/index.html")
-
-def dashboard(request):
-    #return HttpResponse("Hello, world!")
-    return render(request, "clientphotogallery/dashboard.html")
-
-def charts(request):
-    return render(request, "clientphotogallery/charts.html")
-
-def tables(request):
-    return render(request, "clientphotogallery/tables.html")
 
 class UserIsOwner(UserPassesTestMixin):
     def get_gallery(self):
@@ -43,10 +31,12 @@ class UserIsOwner(UserPassesTestMixin):
         else:
             raise PermissionDenied('You must be owner of gallery to edit')
 
+# CBV Photographer Login View
 class UserLoginView(LoginView):
     template_name= 'clientphotogallery/login.html'
     next_page = 'list'
 
+# CBV Photographer Register View
 class UserRegisterView(CreateView):
     template_name = 'clientphotogallery/register.html'
     form_class = RegisterForm
@@ -61,21 +51,24 @@ class UserRegisterView(CreateView):
         )
         login(self.request, user)
         return to_return
-
+# CBV Gallery List View is main view on Dashboard. All galleries of logged in photographer are displayed together will list of client selections
 class GalleryListVew(LoginRequiredMixin,ListView):
     login_url = '/dashboard/login/'
     template_name='clientphotogallery/dashboard.html'
     context_object_name='galleries'
 
+    # Gallery queryset returns only galleries for which logged in user is owner, we also add total number of selections to the context data
     def get_queryset(self):
         queryset = Gallery.objects.filter(owner=self.request.user).annotate(count_selected=Count('assets__selections'))
         return queryset
 
+    # Selections queryset is added to current context
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['selections'] = Selection.objects.filter(asset__gallery__owner=self.request.user).values('client__identifier', 'asset__file', 'asset__gallery__title', 'asset__gallery__archived', 'print_count', 'updated','comment')
         return context
 
+# CBV Gallery Client Selections is similar to Gallery List View but it contains only client selections data that will be manipulated further with JS
 class GalleryClientSelections(LoginRequiredMixin,ListView):
     login_url = '/dashboard/login/'
     template_name='clientphotogallery/clientselections.html'
@@ -87,6 +80,7 @@ class GalleryClientSelections(LoginRequiredMixin,ListView):
         context['selections'] = Selection.objects.filter(asset__gallery__owner=self.request.user, asset__gallery__archived=False).values('client__identifier', 'asset__file', 'asset__gallery__title', 'print_count', 'updated','comment')
         return context
 
+# CBV Gallery Detail View generates view with all the assets in the gallery
 class GalleryDetailedView(LoginRequiredMixin, UserIsOwner, DetailView):
     login_url = '/dashboard/login/'
     model=Gallery
@@ -97,20 +91,15 @@ class GalleryDetailedView(LoginRequiredMixin, UserIsOwner, DetailView):
         queryset = Gallery.objects.filter(owner=self.request.user).annotate(count_selected=Count('assets__selections'))
         return queryset
 
+# CBV Gallery Create View is simple view for creating new gallery, that handles multi file upload
 class GalleryCreateView(LoginRequiredMixin, CreateView):
     login_url = '/dashboard/login/'
     form_class = GalleryCreateForm
     model=Gallery
-    #fields=['title','description','password']
     template_name='clientphotogallery/gallerycreate.html'
     
     def get_success_url(self):
         return self.request.GET.get('next', reverse_lazy('list'))
-
-    # def get_form(self, form_class=None):
-    #     form = super().get_form(form_class)
-    #     form.fields['file_field'].widget = forms.ClearableFileInput(attrs={'multiple': True})
-    #     return form
 
     def form_valid(self,form):        
         gallery = form.save(commit=False)
@@ -123,19 +112,17 @@ class GalleryCreateView(LoginRequiredMixin, CreateView):
                 Asset.objects.create(gallery=gallery, file=file)
         return super().form_valid(form)
 
+# CBV Gallery Edit View for editing exiting gallery, it also supports adding additional files to the gallery
 class GalleryEditView(LoginRequiredMixin, UserIsOwner, UpdateView):
     template_name = 'clientphotogallery/galleryedit.html'
     form_class = GalleryEditForm
     model = Gallery
-    #success_url=reverse_lazy('list')
 
     def get_success_url(self):
         return self.request.GET.get('next', reverse_lazy('list'))
 
     def form_valid(self,form):        
         gallery = form.save()
-        # gallery.owner = self.request.user
-        # gallery.save()
 
         with transaction.atomic():
             files = self.request.FILES.getlist('file_field')
@@ -146,12 +133,14 @@ class GalleryEditView(LoginRequiredMixin, UserIsOwner, UpdateView):
                     Asset.objects.create(gallery=gallery, file=file)
         return super().form_valid(form)
 
+# CBV Gallery Delete View
 class GalleryDeleteView(LoginRequiredMixin, UserIsOwner, DeleteView):
     login_url = '/dashboard/login/'
     template_name = 'clientphotogallery/gallerydelete.html'
     model = Gallery
     success_url=reverse_lazy('list')
-  
+
+# CBV Gallery Asset Remove View - triggered via the JS fetch from gallerydetail.html asset remove button
 class GalleryAssetRemoveView(LoginRequiredMixin, UserIsOwner, DeleteView):
     model = Asset
     
@@ -174,7 +163,7 @@ def is_valid_uuid(val):
         return True
     except ValueError:
         return False
-
+# FBV Client Landing View checks if the valid gallery id and either calls the clientgallery view or renders back the landing view
 @ensure_csrf_cookie
 def ClientLandingView(request):
     if request.method == "POST":
@@ -192,6 +181,7 @@ def ClientLandingView(request):
     else:
         return render(request, "clientphotogallery/clientlanding.html")
 
+# FBV Client Gallery View - main client gallery view where we check or set session, if gallery is enabled or archived, check the gallery password and if all ok we render main clientgalleryview.html
 @ensure_csrf_cookie
 def ClientGalleryView(request, pk=None):
     if (not request.session.get('clientData', False)):
@@ -201,17 +191,6 @@ def ClientGalleryView(request, pk=None):
     
     gal_session = request.session.get('gallery_password', False)
     gal_pw = request.POST.get('gallery_password',request.GET.get('gallery_password'))
-    # clientData = {
-    #     'clientid':clientid,
-    #     'clientemail':None,
-    #     'gallery_password':None,
-    #     'selection':[{
-    #        'assetid':assetid,
-    #        'print_count': printcount,
-    #        'comment':comment
-    #      }]
-    #      'selection':{[2,1,'some comment'],[4,1,'']}
-    # }
 
     if request.method == "GET" or request.method == "POST":
         try:
@@ -224,7 +203,7 @@ def ClientGalleryView(request, pk=None):
         
         if not gallery.password:
             #print("Gallery has no password")
-            # when gallery has no password, we need to set gallery_password session to some random string simulate client successfull login
+            # when gallery has no password, we need to set gallery_password session to some random string simulate client successful login
             request.session['gallery_password']="pRgYwI2t?9&vmB1"
             return render(request, "clientphotogallery/clientgalleryview.html", { "gallery":gallery, "clientData":clientData })
         else:
@@ -240,14 +219,14 @@ def ClientGalleryView(request, pk=None):
                             })
                 # but session exist
                 else:
-                    # if password is correct? need here to refactor to consider different galeries user might have accessed
+                    # if password is correct? need here to refactor to consider different galleries user might have accessed
                     if gal_session == gallery.password:
                         #print("entered here")
                         #sessionData = '{"clientid":"test"}'
                         return render(request, "clientphotogallery/clientgalleryview.html", { "gallery":gallery, "clientData":clientData }) 
                     # if password is not matching, ask to submit password
                     else:
-                        # we need to clear any previous clientData session we migh have
+                        # we need to clear any previous clientData session we might have
                         try:
                             del request.session['clientData']
                         except KeyError:
@@ -273,15 +252,13 @@ def ClientGalleryView(request, pk=None):
                             "gallery_id":gallery.id, 
                             "gallery_title":gallery.title
                             })
-
-        #return ("Hello from client gallery")
     
+# API endpoint for client logout
 def clientLogout(request):
     del request.session['clientData']
-    # temporary leave gallery_password session so that login/logout button works on gallery untill issue7 is resolved
-    #del request.session['gallery_password']
     return JsonResponse({"success": "Client logout successfull"})
 
+# API endpoint for client login
 def clientLogin(request, clientid):
     # print("in clientLogin")
     # for key, value in request.session.items():
@@ -297,8 +274,6 @@ def clientLogin(request, clientid):
             'config': [{'hideSelected': client.hideSelected, 'onlySelected': client.onlySelected}],
             'selection':list(selections.values('asset_id', 'print_count', 'comment'))
         }
-        # request.session['clientData'] = clientData
-        # return JsonResponse({"success": "Client login successfull", "clientData": clientData}) 
 
     except Client.DoesNotExist:
         client = Client(identifier=clientid.lower())
@@ -312,6 +287,7 @@ def clientLogin(request, clientid):
     request.session['clientData'] = clientData
     return JsonResponse({"success": "Client login successfull", "clientData": clientData})
 
+# API for handling asset selections
 def toggleAssetSelection(request, assetid):
     if not request.session.get('gallery_password', False):
         return render(request, "clientphotogallery/clientlanding.html", {"message":"You must have valid session"})
@@ -338,6 +314,7 @@ def toggleAssetSelection(request, assetid):
 
     return JsonResponse({"success": "Selection set", "clientData": clientData})
 
+# API endpoint for handling print counts
 def setPrintCount(request, assetid, print_count):
     if not request.session.get('gallery_password', False):
         return render(request, "clientphotogallery/clientlanding.html", {"message":"You must have valid session"})
@@ -361,6 +338,7 @@ def setPrintCount(request, assetid, print_count):
     except Selection.DoesNotExist:
         return JsonResponse({"error": "Selection not found"}, status=404)
 
+# API endpoint for handling client settings like 'show only selected' and 'hide selected' buttons
 def setClientConf(request, clientid):
     if not request.session.get('gallery_password', False):
         return render(request, "clientphotogallery/clientlanding.html", {"message":"You must have valid session"})
@@ -373,21 +351,16 @@ def setClientConf(request, clientid):
     hideSelected = request.GET.get('hideSelected')
     onlySelected = request.GET.get('onlySelected')
 
-    # print(f"clientid={clientid}, hideSelected={hideSelected}")
-    # print(f"clientid={clientid}, onlySelected={onlySelected}")
-
     try:
         client = Client.objects.get(identifier=clientData['clientid'])
-        # print(f"client values before: hideSelected:{client.hideSelected}, onlySelected: {client.onlySelected}")
+
         if (hideSelected != None):
             client.hideSelected = True if hideSelected == 'true' else False
         if (onlySelected != None):
             client.onlySelected = True if onlySelected == 'true' else False
         client.save()
         client = Client.objects.filter(identifier=clientData['clientid'])
-        # print(f"client values after: hideSelected   :{client.values('hideSelected')}, onlySelected: {client.values('onlySelected')}")
         clientData['config'] = list(client.values('onlySelected','hideSelected'))
-
         request.session['clientData'] = clientData
         return JsonResponse({"success": "Config set", "clientData": clientData})
     except Client.DoesNotExist:
