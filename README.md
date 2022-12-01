@@ -102,6 +102,17 @@ Web application is build using Django, HTML, CSS and JavaScript and can be deplo
 
 ## Unit tests
 
+There are few simple tests written that test functionality of some models and views. To execute tests run following:
+
+1. Modify `settings.py` and set the `SECRET_KEY` to some value, for example:
+
+          #SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+          SECRET_KEY = 'testkey'
+
+2. Execute unit tests from the folder where the `manage.py` is:
+
+          python.exe .\manage.py test
+
 ## To-Do
 
 - Implement comments

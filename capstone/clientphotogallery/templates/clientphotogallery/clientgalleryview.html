@@ -91,7 +91,7 @@
             {% for object in gallery.assets.all %}               
                 <div class="masonry col-lg-4 col-md-4 col-12" >
                     <div class="text-center mt-2">
-                        <a href="{{object.file.url}}"><img src="{{object.file.url}}" class="img-thumbnail" alt="..."/></a>
+                        <a class = "show" href="{{object.file.url}}"><img src="{{object.file.url}}" class="img-thumbnail" alt="..."/></a>
                         <div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
                             <div class="col">
                                 <div class="form-check form-switch text-start">
@@ -224,14 +224,17 @@
             const allCards = document.querySelectorAll('.masonry')
             allCards.forEach(element => {
                 const card = element.querySelector('[id^="pic_select_"]')
+                const pic = element.querySelector('a:first-child')
                 if (element.style.display == 'none') {
                     element.style.display = 'block'
+                    pic.className = 'show'
                 } 
             })
             
             var grid = document.getElementById('masonryRow')
             var msnry = Masonry.data(grid)
             msnry.layout()
+            gallery.refresh()
             //hide gallery selectors
             document.getElementById('onlySelected').innerHTML = ``
             document.getElementById('hideSelected').innerHTML = ``
@@ -249,8 +252,10 @@
                 const allCards = document.querySelectorAll('.masonry')
                 allCards.forEach(element => {
                     const card = element.querySelector('[id^="pic_select_"]')
+                    const pic = element.querySelector('a:first-child')
                     if (card.checked) {
                         element.style.display = 'none'
+                        pic.className = 'hide'
                     } 
                 })
             } else {
@@ -258,8 +263,10 @@
                 const allCards = document.querySelectorAll('.masonry')
                 allCards.forEach(element => {
                     const card = element.querySelector('[id^="pic_select_"]')
+                    const pic = element.querySelector('a:first-child')
                     if (card.checked && element.style.display == 'none') {
                         element.style.display = 'block'
+                        pic.className = 'show'
                     } 
                 })
             }
@@ -279,6 +286,7 @@
             var grid = document.getElementById('masonryRow')
             var msnry = Masonry.data(grid)
             msnry.layout()
+            gallery.refresh()
         }
         function showOnlySelected(){
             const onlySelected=this
@@ -292,10 +300,13 @@
                 const allCards = document.querySelectorAll('.masonry')
                 allCards.forEach(element => {
                     const card = element.querySelector('[id^="pic_select_"]')
+                    const pic = element.querySelector('a:first-child')
                     if (card.checked) {
                         element.style.display = 'block'
+                        pic.className = 'show'
                     } else {
                         element.style.display = 'none'
+                        pic.className = 'hide'
                     }
                 })
             } else {
@@ -303,8 +314,10 @@
                 const allCards = document.querySelectorAll('.masonry')
                 allCards.forEach(element => {
                     const card = element.querySelector('[id^="pic_select_"]')
+                    const pic = element.querySelector('a:first-child')
                     if (!card.checked && element.style.display == 'none') {
                         element.style.display = 'block'
+                        pic.className = 'show'
                     } 
                 })
             }
@@ -324,6 +337,7 @@
             var grid = document.getElementById('masonryRow')
             var msnry = Masonry.data(grid)
             msnry.layout()
+            gallery.refresh()
             
         }
         function clientLogin() {
@@ -391,10 +405,13 @@
                                 const allCards = document.querySelectorAll('.masonry')
                                 allCards.forEach(element => {
                                     const card = element.querySelector('[id^="pic_select_"]')
+                                    const pic = element.querySelector('a:first-child')
                                     if (card.checked) {
                                         element.style.display = 'block'
+                                        pic.className = 'show'
                                     } else {
                                         element.style.display = 'none'
+                                        pic.className = 'hide'
                                     }
                                 })
                             }
@@ -405,14 +422,17 @@
                                 const allCards = document.querySelectorAll('.masonry')
                                 allCards.forEach(element => {
                                     const card = element.querySelector('[id^="pic_select_"]')
+                                    const pic = element.querySelector('a:first-child')
                                     if (card.checked) {
                                         element.style.display = 'none'
+                                        pic.className = 'hide'
                                     } 
                                 })
                             }
                             var grid = document.getElementById('masonryRow')
                             var msnry = Masonry.data(grid)
                             msnry.layout()
+                            gallery.refresh()
                         })
                         .catch (error => {
                             console.error(error);
@@ -440,7 +460,9 @@
             columnWidth: '.grid-sizer'
             });    
         });        
-        var gallery = new SimpleLightbox('.photo_gallery a');
+        var gallery = new SimpleLightbox('.photo_gallery a.show', {
+            'loop': false
+        });
         // Client Login handler
         const clientLoginButton = document.getElementById('clientLogin')
         if (clientLoginButton !== null) {
@@ -471,12 +493,16 @@
                 const allCards = document.querySelectorAll('.masonry')
                 allCards.forEach(element => {
                     const card = element.querySelector('[id^="pic_select_"]')
+                    const pic = element.querySelector('a:first-child')
                     if (card.checked) {
                         element.style.display = 'block'
+                        pic.className = 'show'
                     } else {
                         element.style.display = 'none'
+                        pic.className = 'hide'
                     }
                 })
+                gallery.refresh()
             }
         }
         
@@ -489,10 +515,13 @@
                 const allCards = document.querySelectorAll('.masonry')
                 allCards.forEach(element => {
                     const card = element.querySelector('[id^="pic_select_"]')
+                    const pic = element.querySelector('a:first-child')
                     if (card.checked) {
                         element.style.display = 'none'
+                        pic.className = 'hide'
                     } 
                 })
+                gallery.refresh()
             }
         }
 
