@@ -87,7 +87,7 @@ Web application is build using Django, HTML, CSS and JavaScript and can be deplo
        python3 -m venv env
        . env/bin/activate
        pip install --upgrade pip
-       pip install django
+       pip install -r requirements.txt
        set -a && source .env && set +a
        python capstone/manage.py runserver 0.0.0.0:5000
 
@@ -96,7 +96,7 @@ Web application is build using Django, HTML, CSS and JavaScript and can be deplo
        .\python3 -m venv env
        .\env\Scripts\Activate.ps1
        pip install --upgrade pip
-       pip install django
+       pip install -r requirements.txt
        .\load_env.ps1   
        python .\capstone\manage.py runserver 127.0.0.1:7000 
 
