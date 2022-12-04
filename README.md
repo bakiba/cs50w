@@ -1,4 +1,4 @@
-# CS50w final Capstone project
+# CS50w final project - Client Photo Gallery
 
 This is my final project for CS50w course. Client Photo Gallery is web application for photographers to share their work with clients who will be able to select and comment on images they want for final processing.
 
@@ -8,7 +8,7 @@ This project satisfies distinctiveness and complexity from other projects becaus
 - It is based on personal requirement for a tool to help share photos with clients
 - Uses Django Class Based Views (CBV) as well as Functional Based Views (FBV)
 - There are several models to implement the required functionality
-- Care was taken for pages to reload as little as possible due to amount of high resolution pictures
+- Care was taken for pages to reload as little as possible due to amount of high-resolution pictures
 - JavaScript is used for lot of front-end functionality
 - JavaScript Fetch API with JSON is used for communication between front-end and back-end
 - Use of modern, open source libraries like jQuery, DataTables, Bootstrap, Masonry
