@@ -15,7 +15,7 @@ This project satisfies distinctiveness and complexity from other projects becaus
 
 ## Features
 ### Dashboard
-Where photographer can create galleries, manage pictures and see how many clients have made selections
+Where photographer can create galleries, manage pictures and see how many clients have made selections.
 
 ![!Dashboard](images/2022-11-27-10-54-55.png)
 
@@ -25,23 +25,23 @@ Separate view for the clients where they can view galleries shared with them, se
 ![!ClientView](images/2022-11-27-10-57-27.png)
 
 ## Responsive
-Web application is mobile friendly with responsive design
+Web application is mobile friendly with responsive design.
 
 ![!Mobile view](images/2022-11-27-11-14-57.png)
 
 ## File content description
-Description of contents of files created for this project (excluding standard Django files like models, views and urls.)
+Description of contents of files created for this project (excluding standard Django files like models, views and urls).
 
-- forms.py - definition for CBV Forms used by the project
-- storage.py - customized file handling function for Django storage class
-- templatetags\app_filters.py - various filters used in the templates
-- templates\clientphotogallery - Django template  files, see below for description
+- forms.py - definition for CBV Forms used by the project.
+- storage.py - customized file handling function for Django storage class.
+- templatetags\app_filters.py - various filters used in the templates.
+- templates\clientphotogallery - Django template  files, see below for description.
 
 **Client view templates**
 
-- clientgalleryauth.html - gallery view authentication page where client enters gallery password if set
-- clientgalleryview.html - main client view for given gallery
-- clientlanding.html - simple view where client can provide gallery id to be taken to specific gallery view
+- clientgalleryauth.html - gallery view authentication page where client enters gallery password if set.
+- clientgalleryview.html - main client view for given gallery.
+- clientlanding.html - simple view where client can provide gallery id to be taken to specific gallery view.
 
 **Photographer view templates**
 
@@ -52,7 +52,7 @@ Description of contents of files created for this project (excluding standard Dj
 - galleryedit.html - template for editing gallery - edit title, description, add additional pictures, update password.
 - gallerydetail.html - template for viewing full gallery details where photographer can remove pictures, view pictures, and see comments on each picture.
 - gallerydelete.html - simple view just for confirming gallery deleting.
-- clientselections.html - client selections view with different groupings for asset
+- clientselections.html - client selections view with different groupings for asset.
 - base.html - base layout for photographer login/register views.
 - login.html - photographer login page view.
 - register.html - photographer register page view.
@@ -115,7 +115,7 @@ There are few simple tests written that test functionality of some models and vi
 
 ## To-Do
 
-- Implement comments
-- Redesign index page - this was taken from Bootstrap free samples and was just quickly modified to suite this final project
-- Add more unit tests
+- Implement comments.
+- Redesign index page - this was taken from Bootstrap free samples and was just quickly modified to suite this final project.
+- Add more unit tests.
 
